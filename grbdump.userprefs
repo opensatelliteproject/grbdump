@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="grbdump/grbdump.csproj" RefactoringSettings.EnableRefactorings="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="grbdump/GRBMSDU.cs">
+    <Files>
+      <File FileName="grbdump/Program.cs" Line="29" Column="25" />
+      <File FileName="grbdump/GRBDemuxer.cs" Line="12" Column="5" />
+      <File FileName="grbdump/GRBMSDU.cs" Line="52" Column="28" />
+      <File FileName="grbdump/GRBTools.cs" Line="14" Column="36" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
