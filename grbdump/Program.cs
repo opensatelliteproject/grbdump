@@ -18,8 +18,8 @@ namespace grbdump {
                 //data.Print();
                 int vcid = (data[1] & 0x3F);
                 int vcnt = (data[2] << 16 | data[3] << 8 | data[4]);
-                UIConsole.Log($"Packet VCID: {vcid}");
-                UIConsole.Log($"Packet Count : {vcnt}");
+                // UIConsole.Log($"Packet VCID: {vcid}");
+                // UIConsole.Log($"Packet Count : {vcnt}");
                 if (vcid != 5) {
                     UIConsole.Warn("Skipping");
                 } else {

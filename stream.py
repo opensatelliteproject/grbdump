@@ -3,7 +3,7 @@
 import socket, time
 
 #file = "/media/ELTN/Baseband Records/GOES/GRB/TBSCapture/Q-capture1.ts"
-file = "/media/ELTN/Baseband Records/GOES/GRB/TestData/cspp-geo-grb-test-data-0.4.6/cadus/CADU_5_b0fXXXX"
+file = "/media/ELTN/Baseband Records/GOES/GRB/TestData/cspp-geo-grb-test-data-0.4.6/CADU_5"
 SearchBuffSize = 2048
 MaxBuffSize = 16384
 ccsdsSync = "\x1A\xCF\xFC\x1D"
@@ -73,9 +73,7 @@ while True:
     break
   frameCount+=1
   parseFrame(rd, conn)
-  time.sleep(0.01)
-  if frameCount == 5000:
-    break
+  time.sleep(0.001)
 '''
 while True:
   rd = f.read(SearchBuffSize)

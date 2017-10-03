@@ -156,7 +156,6 @@ namespace grbdump.GRB {
                 var dt = new DateTime (2000, 1, 1, 0, 0, 0);
                 dt = dt.AddDays (daysSinceEpoch);
                 dt = dt.AddMilliseconds (msOfDay);
-                Console.WriteLine ($"DT: {dt}");
 
                 var grbSU = BitConverter.ToUInt16 (grbS, 0);
 
@@ -165,11 +164,12 @@ namespace grbdump.GRB {
                 var grbPayloadVariant2 = ((grbS [1] & 3) << 3) + ((grbS [0] & 0xE0) >> 5);
                 var assemblerIdentifier = (grbSU & 0xC00) >> 10;
                 var systemEnvironment = (grbSU & 0x9000) >> 12;
-
+                /*
                 Console.WriteLine ($"GRB Version: {grbVersion}");
                 Console.WriteLine ($"GRB Payload: {grbPayloadVariant} {grbPayloadVariant2}");
                 Console.WriteLine ($"Assembler Identifier: {assemblerIdentifier}");
                 Console.WriteLine ($"System Environment: {systemEnvironment}");
+                */
             }
             if (data.Length > msdu.PacketLength + 4) {
                 msdu.RemainingData = data.Skip(msdu.PacketLength+ 4).ToArray();

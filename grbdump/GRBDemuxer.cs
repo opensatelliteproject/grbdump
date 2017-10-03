@@ -174,10 +174,11 @@ namespace grbdump {
                         totalOffset += 34;
                     }
                 } else {
-                    totalOffset = 0;
+                    totalOffset = 8;
                 }
 
                 byte[] dataToSave = msdu.Data.Skip(totalOffset).ToArray(); 
+                dataToSave = dataToSave.Take(dataToSave.Length - 4).ToArray(); // Remove CRC
                 lastMSDU = msdu;
 
                 using (FileStream fs = new FileStream(filename, firstOrSinglePacket ? FileMode.Create : FileMode.Append, FileAccess.Write)) {

@@ -12,6 +12,7 @@ namespace grbdump.GRB {
         public byte[] reserved;
         public uint grbPayloadCount;
         public DateTime timestamp;
+        public ulong epoch;
         public string filename;
         public int apid;
 
@@ -38,7 +39,9 @@ namespace grbdump.GRB {
             timestamp = timestamp.AddSeconds(secondsSinceEpoch);
             timestamp = timestamp.AddMilliseconds(microsecondsFromSeconds / 1000f);
 
-            filename = $"{apid}-{grbPayloadCount}-{LLTools.DateTimeToTimestamp (timestamp)}.grb";
+            epoch = (ulong) (secondsSinceEpoch * 1e6 + microsecondsFromSeconds);
+
+            filename = $"{epoch}-{grbPayloadCount:D8}.grb";
             UIConsole.Log ($"File: {filename} - DateTime: {timestamp.ToString()} - Compression: {compressionAlgorithm}");
         }
     }

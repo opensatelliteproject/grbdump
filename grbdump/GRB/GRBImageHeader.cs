@@ -13,6 +13,7 @@ namespace grbdump.GRB {
         public DateTime timestamp;
         public string filename;
         public int apid;
+        public ulong epoch;
 
         public uint rowOffset;
         public uint rowOffsetB;
@@ -52,6 +53,8 @@ namespace grbdump.GRB {
             microsecondsFromSeconds = BitConverter.ToUInt32 (microsseconds, 0);
             sequence = BitConverter.ToUInt16 (count, 0);
 
+            epoch = (ulong)(secondsSinceEpoch * 1e6 + microsecondsFromSeconds);
+
             rowOffset = (uint) (rOff [2] << 16 + rOff [1] << 8 + rOff [0]) & 0xFFFFFFFF;
 
             ulX = BitConverter.ToUInt32 (ulXB, 0);
@@ -64,8 +67,23 @@ namespace grbdump.GRB {
             timestamp = timestamp.AddSeconds(secondsSinceEpoch);
             timestamp = timestamp.AddMilliseconds(microsecondsFromSeconds / 1000f);
 
-            filename = $"{apid}-{sequence}-{LLTools.DateTimeToTimestamp (timestamp)}.img";
+            filename = compressionAlgorithm == 1 ? $"{epoch}-{sequence:D8}.j2k" : $"{epoch}-{sequence:D8}.img";
             UIConsole.Log ($"File: {filename} - DateTime: {timestamp.ToString()} - Compression: {compressionAlgorithm}");
+        }
+
+        public override string ToString() {
+            string o = "";
+            o += $"DateTime: {timestamp.ToString()}\n";
+            o += $"Sequence: {sequence}\n";
+            o += $"Epoch: {epoch}\n";
+            o += $"APID: {apid}\n";
+            o += $"rowOffset: {rowOffset}\n";
+            o += $"upperLeftX: {ulX}\n";
+            o += $"upperLeftY: {ulY}\n";
+            o += $"width: {width}\n";
+            o += $"height: {height}\n";
+            o += $"dqfOffset: {dqfOffset}\n";
+            return o;
         }
     }
 }
