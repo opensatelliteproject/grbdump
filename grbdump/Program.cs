@@ -5,25 +5,24 @@ using System.Linq;
 
 namespace grbdump {
     class MainClass {
-        static GRBDemuxer grbDemuxer;
+        static Demuxer grbDemuxer5;
+        static Demuxer grbDemuxer6;
         static Connector cn;
         public static void Main (string[] args) {
             Console.WriteLine ("Hello World!");
             UIConsole.GlobalEnableDebug = true;
-            grbDemuxer = new GRBDemuxer ();
+            grbDemuxer5 = new Demuxer ();
+            grbDemuxer6 = new Demuxer ();
             cn = new Connector ();
-            cn.ChannelDataAvailable += (byte[] data) => {
+            cn.ChannelDataAvailable += data => {
                 data = data.Take(2042).ToArray();
-                //UIConsole.Log("Received Packet");
-                //data.Print();
                 int vcid = (data[1] & 0x3F);
-                int vcnt = (data[2] << 16 | data[3] << 8 | data[4]);
-                // UIConsole.Log($"Packet VCID: {vcid}");
-                // UIConsole.Log($"Packet Count : {vcnt}");
-                if (vcid != 5) {
-                    UIConsole.Warn("Skipping");
+                if (vcid == 5) {
+                    grbDemuxer5.ParseBytes(data);
+                } else if (vcid == 6) {
+                    grbDemuxer6.ParseBytes(data);
                 } else {
-                    grbDemuxer.ParseBytes(data);
+                    UIConsole.Error($"Unknown VCID for GRB: {vcid}");
                 }
             };
             cn.Start ();

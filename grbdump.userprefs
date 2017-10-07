@@ -1,17 +1,12 @@
 ﻿<Properties StartupItem="grbdump/grbdump.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="grbdump/GRB/GRBImageHeader.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ImageTools/Image16.cs">
     <Files>
-      <File FileName="grbdump/Program.cs" Line="27" Column="18" />
-      <File FileName="grbdump/GRBFileHandler.cs" Line="36" Column="44" />
-      <File FileName="grbdump/GRBDemuxer.cs" Line="176" Column="25" />
-      <File FileName="grbdump/GRB/Enum/PayloadType.cs" Line="1" Column="1" />
-      <File FileName="grbdump/GRB/Enum/Instrument.cs" Line="1" Column="1" />
-      <File FileName="grbdump/GRB/GRBTools.cs" Line="5" Column="35" />
-      <File FileName="grbdump/GRB/GRBImageHeader.cs" Line="70" Column="32" />
-      <File FileName="grbdump/GRB/GRBGenericHeader.cs" Line="44" Column="26" />
-      <File FileName="grbdump/GRB/EnumHelpers.cs" Line="20" Column="13" />
-      <File FileName="grbdump/GRB/GRBMSDU.cs" Line="38" Column="51" />
+      <File FileName="GRB/MSDU.cs" Line="22" Column="24" />
+      <File FileName="GRB/Tools.cs" Line="11" Column="33" />
+      <File FileName="grbdump/Connector.cs" Line="120" Column="30" />
+      <File FileName="grbdump/Program.cs" Line="15" Column="42" />
+      <File FileName="ImageTools/Image16.cs" Line="90" Column="14" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

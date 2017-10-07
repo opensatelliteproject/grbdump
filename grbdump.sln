@@ -3,12 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "grbdump", "grbdump\grbdump.csproj", "{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSJ2K", "CSJ2K\CSJ2K.csproj", "{36EC19FD-7AF1-4176-BCA0-EB41F6C8E0EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageTools", "ImageTools\ImageTools.csproj", "{74ABADF7-5281-4A0C-ABE6-CB325E75E6C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GRB", "GRB\GRB.csproj", "{0B6D542D-33A9-43E7-989F-9C56359860FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0B6D542D-33A9-43E7-989F-9C56359860FB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0B6D542D-33A9-43E7-989F-9C56359860FB}.Debug|x86.Build.0 = Debug|Any CPU
+		{0B6D542D-33A9-43E7-989F-9C56359860FB}.Release|x86.ActiveCfg = Release|Any CPU
+		{0B6D542D-33A9-43E7-989F-9C56359860FB}.Release|x86.Build.0 = Release|Any CPU
+		{36EC19FD-7AF1-4176-BCA0-EB41F6C8E0EA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{36EC19FD-7AF1-4176-BCA0-EB41F6C8E0EA}.Debug|x86.Build.0 = Debug|Any CPU
+		{36EC19FD-7AF1-4176-BCA0-EB41F6C8E0EA}.Release|x86.ActiveCfg = Release|Any CPU
+		{36EC19FD-7AF1-4176-BCA0-EB41F6C8E0EA}.Release|x86.Build.0 = Release|Any CPU
+		{74ABADF7-5281-4A0C-ABE6-CB325E75E6C9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{74ABADF7-5281-4A0C-ABE6-CB325E75E6C9}.Debug|x86.Build.0 = Debug|Any CPU
+		{74ABADF7-5281-4A0C-ABE6-CB325E75E6C9}.Release|x86.ActiveCfg = Release|Any CPU
+		{74ABADF7-5281-4A0C-ABE6-CB325E75E6C9}.Release|x86.Build.0 = Release|Any CPU
 		{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}.Debug|x86.ActiveCfg = Debug|x86
 		{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}.Debug|x86.Build.0 = Debug|x86
 		{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}.Release|x86.ActiveCfg = Release|x86
