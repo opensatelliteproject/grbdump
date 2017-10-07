@@ -70,22 +70,25 @@ namespace OpenSatelliteProject.IMTools {
 
         public void DrawImage(Image16 src, Rectangle srcRect, int posX, int posY, bool resizeIfNeeded = false) {
             if (resizeIfNeeded) {
-                int neededWidth = posX + srcRect.Width - srcRect.X;
-                int neededHeight = posY + srcRect.Height - srcRect.Y;
+                int neededWidth = posX + srcRect.Width;
+                int neededHeight = posY + srcRect.Height;
 
                 if (neededWidth > Width || neededHeight > Height) {
                     Resize (neededWidth, neededHeight);
                 }
             }
-            for (int y = srcRect.Y; y < srcRect.Height; y++) {
-                int targetX = Math.Min(posX, 0);
-                int lenX = Math.Min(srcRect.Width - srcRect.X, Width - targetX);
-                int targetY = y + posY;
-                if (targetY > 0 && targetY < Height) {
-                    Buffer.BlockCopy (src.data [y], srcRect.X * sizeof(ushort), data [targetY], targetX * sizeof(ushort), lenX * sizeof(ushort));
+
+            int targetX = Math.Max(posX, 0);
+            int lenX = Math.Min(srcRect.Width, Width - targetX);
+            if (lenX > 0) {
+                for (int y = srcRect.Y; y < srcRect.Height; y++) {
+                    int targetY = y + posY;
+                    if (targetY >= 0 && targetY < Height) {
+                        Buffer.BlockCopy (src.data [y], srcRect.X * sizeof(ushort), data [targetY], targetX * sizeof(ushort), lenX * sizeof(ushort));
+                    }
                 }
+                dirty = true;
             }
-            dirty = true;
         }
 
         public void DrawImage(int[] src, int srcWidth, int srcHeight, int posX, int posY, bool resizeIfNeeded = false) {
@@ -105,7 +108,7 @@ namespace OpenSatelliteProject.IMTools {
                 int targetY = posY + y;               
                 for (int x = srcRect.X; x < srcRect.Width; x++) {
                     int targetX = posX + x;
-                    if ((targetX > 0 && targetX < Width) && (targetY > 0 && targetY < Height)) {
+                    if ((targetX >= 0 && targetX < Width) && (targetY >= 0 && targetY < Height)) {
                         data [targetY] [targetX] = (ushort)Clamp (src [y * srcWidth + x], 0, 65535);
                     }
                 }

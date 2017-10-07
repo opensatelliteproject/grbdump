@@ -28,7 +28,7 @@ namespace grbdump {
 
             try {
                 // UIConsole.Log($"Moving File {filename} to {f}");
-                UIConsole.Log($"New Generic File at {f}");
+                // UIConsole.Log($"New Generic File at {f}");
                 File.Move(filename, f);
             } catch (IOException e) {
                 UIConsole.Error(String.Format("Error moving file {0} to {1}: {2}", filename, f, e));
@@ -65,7 +65,7 @@ namespace grbdump {
             }
 
             if (ImageCache [zPath].Done) {
-                UIConsole.Log ($"New image at {f}");
+                // UIConsole.Log ($"New image at {f}");
                 ImageCache [zPath].SavePGM ($"{f}.pgm");
                 ImageCache [zPath].SaveJPG ($"{f}.jpg");
                 File.WriteAllText($"{f}.txt", header.ToString());
@@ -88,8 +88,8 @@ namespace grbdump {
                 BigImageCache [bPath] = new ImageAssembler (segment.Width, segment.Height);
                 APIDStamp [header.apid] = header.epoch;
             }
-
-            BigImageCache [bPath].DrawAt (segment.Image, (int) header.ulX, (int) header.ulY, true);
+            UIConsole.Log ($"{header.apid:X3} - Drawing {header.sequence} at {header.ulX}, {header.ulY}");
+            BigImageCache [bPath].DrawAt (segment.Image, (int) header.ulX, (int) header.ulY + (int)header.rowOffset, true); // rowOffset to int might be bad
         }
     }
 }
