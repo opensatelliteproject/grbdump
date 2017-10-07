@@ -54,6 +54,7 @@
     <Reference Include="XRIT">
       <HintPath>..\packages\OpenSatelliteProject.XRIT.1.3.0\lib\net45\XRIT.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Cairo" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -76,9 +77,9 @@
       <Project>{36EC19FD-7AF1-4176-BCA0-EB41F6C8E0EA}</Project>
       <Name>CSJ2K</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ImageTools\ImageTools.csproj">
+    <ProjectReference Include="..\ImageTools\IMTools.csproj">
       <Project>{74ABADF7-5281-4A0C-ABE6-CB325E75E6C9}</Project>
-      <Name>ImageTools</Name>
+      <Name>IMTools</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

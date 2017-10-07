@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{74ABADF7-5281-4A0C-ABE6-CB325E75E6C9}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>OpenSatelliteProject.ImageTools</RootNamespace>
-    <AssemblyName>OpenSatelliteProject.ImageTools</AssemblyName>
+    <RootNamespace>OpenSatelliteProject.IMTools</RootNamespace>
+    <AssemblyName>OpenSatelliteProject.IMTools</AssemblyName>
     <SynchReleaseVersion>false</SynchReleaseVersion>
     <Description>Image Tools for processing 16 Bit Imagery</Description>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -38,6 +38,13 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Image16.cs" />
+    <Compile Include="ImageAssembler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\CSJ2K\CSJ2K.csproj">
+      <Project>{36EC19FD-7AF1-4176-BCA0-EB41F6C8E0EA}</Project>
+      <Name>CSJ2K</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

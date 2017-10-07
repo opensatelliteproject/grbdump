@@ -5,8 +5,9 @@
       <File FileName="GRB/MSDU.cs" Line="22" Column="24" />
       <File FileName="GRB/Tools.cs" Line="11" Column="33" />
       <File FileName="grbdump/Connector.cs" Line="120" Column="30" />
-      <File FileName="grbdump/Program.cs" Line="15" Column="42" />
-      <File FileName="ImageTools/Image16.cs" Line="90" Column="14" />
+      <File FileName="ImageTools/Image16.cs" Line="81" Column="49" />
+      <File FileName="grbdump/FileHandler.cs" Line="92" Column="38" />
+      <File FileName="ImageTools/ImageAssembler.cs" Line="62" Column="22" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

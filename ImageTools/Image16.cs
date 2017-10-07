@@ -2,8 +2,9 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 
-namespace OpenSatelliteProject.ImageTools {
+namespace OpenSatelliteProject.IMTools {
     public class Image16 {
 
         public int Width { get; private set; }
@@ -34,8 +35,8 @@ namespace OpenSatelliteProject.ImageTools {
         ushort cachedMin = 0xFFFF;
 
         public Image16 (int width, int height) {
-            this.Width = width;
-            this.Height = height;
+            Width = width;
+            Height = height;
             data = new ushort[height][];
             for (int i = 0; i < height; i++) {
                 data[i] = new ushort[width];
@@ -43,19 +44,63 @@ namespace OpenSatelliteProject.ImageTools {
             dirty = true;
         }
 
-        public void DrawImage(Image16 src, Rectangle srcRect, int posX, int posY) {
+        public void Resize(int newWidth, int newHeight) {
+            // Console.WriteLine ($"Resizing to {newWidth}, {newHeight} from {Width}, {Height}");
+            if (Height != newHeight) {
+                Array.Resize (ref data, newHeight);
+                for (int y = Height; y < newHeight; y++) {
+                    data [y] = new ushort[newWidth];
+                }
+            }
+
+            if (Width != newWidth) {
+                for (int y = 0; y < Height; y++) {
+                    Array.Resize (ref data [y], newWidth);
+                }
+            }
+
+            Width = newWidth;
+            Height = newHeight;
+            dirty = true;
+        }
+
+        public void DrawImage(Image16 src, int posX, int posY, bool resizeIfNeeded = false) {
+            DrawImage (src, new Rectangle (0, 0, src.Width, src.Height), posX, posY, resizeIfNeeded);
+        }
+
+        public void DrawImage(Image16 src, Rectangle srcRect, int posX, int posY, bool resizeIfNeeded = false) {
+            if (resizeIfNeeded) {
+                int neededWidth = posX + srcRect.Width - srcRect.X;
+                int neededHeight = posY + srcRect.Height - srcRect.Y;
+
+                if (neededWidth > Width || neededHeight > Height) {
+                    Resize (neededWidth, neededHeight);
+                }
+            }
             for (int y = srcRect.Y; y < srcRect.Height; y++) {
                 int targetX = Math.Min(posX, 0);
-                int lenX = Math.Min(srcRect.Width - targetX, Width - targetX);
+                int lenX = Math.Min(srcRect.Width - srcRect.X, Width - targetX);
                 int targetY = y + posY;
                 if (targetY > 0 && targetY < Height) {
-                    Buffer.BlockCopy (src.data [y], srcRect.X * sizeof(ushort), data [targetY], targetX * sizeof(ushort), lenX);
+                    Buffer.BlockCopy (src.data [y], srcRect.X * sizeof(ushort), data [targetY], targetX * sizeof(ushort), lenX * sizeof(ushort));
                 }
             }
             dirty = true;
         }
 
-        public void DrawImage(int[] src, int srcWidth, Rectangle srcRect, int posX, int posY) {
+        public void DrawImage(int[] src, int srcWidth, int srcHeight, int posX, int posY, bool resizeIfNeeded = false) {
+            DrawImage (src, srcWidth, new Rectangle (0, 0, srcWidth, srcHeight), posX, posY, resizeIfNeeded);
+        }
+
+        public void DrawImage(int[] src, int srcWidth, Rectangle srcRect, int posX, int posY, bool resizeIfNeeded = false) {
+            if (resizeIfNeeded) {
+                int neededWidth = posX + srcRect.Width - srcRect.X;
+                int neededHeight = posY + srcRect.Height - srcRect.Y;
+
+                if (neededWidth > Width || neededHeight > Height) {
+                    Resize (neededWidth, neededHeight);
+                }
+            }
             for (int y = srcRect.Y; y < srcRect.Height; y++) {
                 int targetY = posY + y;               
                 for (int x = srcRect.X; x < srcRect.Width; x++) {
@@ -69,7 +114,7 @@ namespace OpenSatelliteProject.ImageTools {
         }
 
         public Bitmap ToBitmap() {
-            Bitmap bmp = new Bitmap (Width, Height, PixelFormat.Format8bppIndexed);
+            var bmp = new Bitmap (Width, Height, PixelFormat.Format8bppIndexed);
 
             var pal = bmp.Palette;
             for (int i = 0; i < 256; i++) {
@@ -78,23 +123,26 @@ namespace OpenSatelliteProject.ImageTools {
 
             bmp.Palette = pal;
 
-            BitmapData bmpData = bmp.LockBits (new Rectangle (0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
-            unsafe {
-                var bData = (byte *)bmpData.Scan0;
-                for (int y = 0; y < Height; y++) {
-                    for (int x = 0; x < Width; x++) {
-                        int c = y * bmpData.Stride + x;
-                        bData [c] = (byte)Clamp(data [y] [x], 0, 255);
-                    }
+            float scale = (MaxValue - MinValue) / 255f;
+            var byteData = new byte[Height][];
+            for (int y = 0; y < Height; y++) {
+                byteData [y] = new byte[Width];
+                for (int x = 0; x < Width; x++) {
+                    byteData [y] [x] = (byte) Clamp((int) ((data [y] [x] - MinValue) / scale), 0, 255);
                 }
+            }
+
+            var bmpData = bmp.LockBits (new Rectangle (0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+            for (int y = 0; y < Height; y++) {
+                Marshal.Copy (byteData [y], 0, IntPtr.Add (bmpData.Scan0, y * bmpData.Stride), Width); 
             }
             bmp.UnlockBits (bmpData);
             return bmp;
         }
 
         public void SavePGM(string filename) {
-            using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write)) {
-                using (BinaryWriter bw = new BinaryWriter(fs)) {
+            using (var fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write)) {
+                using (var bw = new BinaryWriter(fs)) {
                     string head = $"P5\n# Generated by OpenSatelliteProject\n{Width} {Height}\n65535\n";
                     for (int i = 0; i < head.Length; i++) {
                         bw.Write ((byte)head[i]);
