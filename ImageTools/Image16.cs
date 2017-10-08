@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace OpenSatelliteProject.IMTools {
     public class Image16 {
-
+        public readonly ushort FillValue = 0xFFFF;
         public int Width { get; private set; }
         public int Height { get; private set; }
 
@@ -34,28 +34,44 @@ namespace OpenSatelliteProject.IMTools {
         ushort cachedMax = 0;
         ushort cachedMin = 0xFFFF;
 
-        public Image16 (int width, int height) {
+        void Initialize(ref ushort[] array) {
+            for (int i = 0; i < array.Length; i++) {
+                array [i] = FillValue;
+            }
+        }
+
+        void Initialize(ref ushort[] array, int index) {
+            for (int i = index; i < array.Length; i++) {
+                array [i] = FillValue;
+            }
+        }
+
+        public Image16 (int width, int height, ushort FillValue = 0xFFFF) {
             Width = width;
             Height = height;
             data = new ushort[height][];
             for (int i = 0; i < height; i++) {
                 data[i] = new ushort[width];
+                Initialize (ref data [i]);
             }
             dirty = true;
+            this.FillValue = FillValue;
         }
 
         public void Resize(int newWidth, int newHeight) {
-            // Console.WriteLine ($"Resizing to {newWidth}, {newHeight} from {Width}, {Height}");
+            Console.WriteLine ($"Resizing to {newWidth}, {newHeight} from {Width}, {Height}");
             if (Height != newHeight) {
                 Array.Resize (ref data, newHeight);
                 for (int y = Height; y < newHeight; y++) {
                     data [y] = new ushort[newWidth];
+                    Initialize (ref data [y]);
                 }
             }
 
             if (Width != newWidth) {
                 for (int y = 0; y < Height; y++) {
                     Array.Resize (ref data [y], newWidth);
+                    Initialize (ref data [y], Width);
                 }
             }
 
@@ -70,8 +86,8 @@ namespace OpenSatelliteProject.IMTools {
 
         public void DrawImage(Image16 src, Rectangle srcRect, int posX, int posY, bool resizeIfNeeded = false) {
             if (resizeIfNeeded) {
-                int neededWidth = posX + srcRect.Width;
-                int neededHeight = posY + srcRect.Height;
+                int neededWidth = Math.Max(posX + srcRect.Width, Width);
+                int neededHeight = Math.Max(posY + srcRect.Height, Height);
 
                 if (neededWidth > Width || neededHeight > Height) {
                     Resize (neededWidth, neededHeight);
@@ -97,8 +113,8 @@ namespace OpenSatelliteProject.IMTools {
 
         public void DrawImage(int[] src, int srcWidth, Rectangle srcRect, int posX, int posY, bool resizeIfNeeded = false) {
             if (resizeIfNeeded) {
-                int neededWidth = posX + srcRect.Width - srcRect.X;
-                int neededHeight = posY + srcRect.Height - srcRect.Y;
+                int neededWidth = Math.Max(posX + srcRect.Width, Width);
+                int neededHeight = Math.Max(posY + srcRect.Height, Height);
 
                 if (neededWidth > Width || neededHeight > Height) {
                     Resize (neededWidth, neededHeight);
@@ -194,12 +210,14 @@ namespace OpenSatelliteProject.IMTools {
         void ComputeMinMax() {
             for (int y = 0; y < Height; y++) {
                 for (int x = 0; x < Width; x++) {
-                    cachedMax = Math.Max (cachedMax, data [y][x]);
-                    cachedMin = Math.Min (cachedMin, data [y][x]); 
+                    ushort v = data [y] [x];
+                    if (v != FillValue) {
+                        cachedMax = Math.Max (cachedMax, v);
+                        cachedMin = Math.Min (cachedMin, v); 
+                    }
                 }
             }
             dirty = false;
         }
     }
 }
-

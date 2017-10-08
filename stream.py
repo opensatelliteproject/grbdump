@@ -3,7 +3,8 @@
 import socket, time
 
 #file = "/media/ELTN/Baseband Records/GOES/GRB/TBSCapture/Q-capture1.ts"
-file = "/media/ELTN/Baseband Records/GOES/GRB/TestData/cspp-geo-grb-test-data-0.4.6/CADU_5"
+#file = "/media/ELTN/Baseband Records/GOES/GRB/TestData/cspp-geo-grb-test-data-0.4.6/CADU_6"
+file = "/media/lucas/0E003F18003F05ED1/CADU/CADU_6"
 SearchBuffSize = 2048
 MaxBuffSize = 16384
 ccsdsSync = "\x1A\xCF\xFC\x1D"
@@ -27,22 +28,24 @@ def searchInBuff(buff, token):
   return None
 
 def parseFrame(data, conn):
+  #if data[:4] == '\x1A\xCF\xFC\x1D':
+  #  print "OK"
   data = data[4:]
   scid = ((ord(data[0]) & 0x3F) << 2) + ( (ord(data[1]) & 0xC0) >> 6)
   vcid = ((ord(data[1]) & 0x3F))
   counter = ord(data[4]) + (ord(data[3]) << 8) + (ord(data[2]) << 16)
 
   if vcid != 63:
-    print "Valid Frame:"
+    print "Valid Frame"
     print "   Satellite ID: %s" %scid
-    if vcid == 5:
-      print "   RHCP Channel"
-    elif vcid == 6:
-      print "   LHCP Channel"
-    else:
-      print "   Virtual Channel: %s" %vcid
+    #if vcid == 5:
+    #  print "   RHCP Channel"
+    #elif vcid == 6:
+    #  print "   LHCP Channel"
+    #else:
+    #  print "   Virtual Channel: %s" %vcid
     print "   Counter: %s" %counter
-    print ""
+    #print ""
     conn.send(data[:2042])
     #f = open("packet.bin", "wb")
     #f.write(data)
@@ -63,17 +66,14 @@ print "Waiting connection"
 conn, addr = s.accept()
 print 'Connection address:', addr
 #conn = None
-#f.seek(0xCD) # Near a file
-
-# Assume Start with 0x1ACFFC1D
-
 while True:
   rd = f.read(2048)
   if len(rd) < 2048:
     break
   frameCount+=1
   parseFrame(rd, conn)
-  time.sleep(0.001)
+  time.sleep(0.00015) # Full Speed
+  # time.sleep(0.01)
 '''
 while True:
   rd = f.read(SearchBuffSize)

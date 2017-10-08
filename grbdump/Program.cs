@@ -2,6 +2,7 @@
 using OpenSatelliteProject;
 using System.Threading;
 using System.Linq;
+using System.Diagnostics;
 
 namespace grbdump {
     class MainClass {
@@ -9,6 +10,12 @@ namespace grbdump {
         static Demuxer grbDemuxer6;
         static Connector cn;
         public static void Main (string[] args) {
+            try {
+                Process thisProc = Process.GetCurrentProcess();
+                thisProc.PriorityClass = ProcessPriorityClass.High;
+            } catch (Exception e) {
+                UIConsole.Error($"Failed changing process priority: {e}");
+            }
             Console.WriteLine ("Hello World!");
             UIConsole.GlobalEnableDebug = true;
             grbDemuxer5 = new Demuxer ();

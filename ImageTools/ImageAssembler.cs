@@ -3,6 +3,7 @@ using CSJ2K;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace OpenSatelliteProject.IMTools {
     public class ImageAssembler {
@@ -10,6 +11,7 @@ namespace OpenSatelliteProject.IMTools {
         readonly Image16 image;
         int posY;
         int segmentHeight;
+        ulong epoch;
 
         public int Width {
             get { return image.Width; }
@@ -31,10 +33,17 @@ namespace OpenSatelliteProject.IMTools {
             }
         }
 
-        public ImageAssembler (int width, int height) {
+        public ulong Epoch {
+            get {
+                return epoch;
+            }
+        }
+
+        public ImageAssembler (int width, int height, ulong epoch = 0) {
             image = new Image16 (width, height);
             posY = 0;
             segmentHeight = 0;
+            this.epoch = epoch;
         }
 
         public void AppendJ2K(string filename, bool resizeIfNeeded = false) {
@@ -44,7 +53,7 @@ namespace OpenSatelliteProject.IMTools {
                 posY += j2k.Height;
                 segmentHeight = j2k.Height;
             } catch (Exception e) {
-                Console.WriteLine ($"Corrupted Segment for file {filename}: {e}");
+                Console.WriteLine ($"Corrupted Segment ({e.GetType().Name}): {e.Message}");
                 posY += segmentHeight;
             }
         }
@@ -54,7 +63,7 @@ namespace OpenSatelliteProject.IMTools {
                 var j2k = J2kImage.FromFile(filename);
                 image.DrawImage (j2k.GetComponent(0), j2k.Width, j2k.Height, x, y, resizeIfNeeded);
             } catch (Exception e) {
-                Console.WriteLine ($"Corrupted Segment: {e}");
+                Console.WriteLine ($"Corrupted Segment ({e.GetType().Name}): {e.Message}");
             }
         }
 
@@ -79,14 +88,14 @@ namespace OpenSatelliteProject.IMTools {
         }
 
 
-        public async void AsyncSavePGM(string filename) {
+        public async Task AsyncSavePGM(string filename) {
             await Task.Run (() => {
                 image.SavePGM (filename);
                 Console.WriteLine($"File {filename} saved.");
             });
         }
 
-        public async void AsyncSavePNG(string filename) {
+        public async Task AsyncSavePNG(string filename) {
             await Task.Run (() => {
                 var bmp = image.ToBitmap ();
                 bmp.Save (filename, ImageFormat.Png);
@@ -95,7 +104,7 @@ namespace OpenSatelliteProject.IMTools {
             });
         }
 
-        public async void AsyncSaveJPG(string filename) {
+        public async Task AsyncSaveJPG(string filename) {
             await Task.Run (() => {
                 var bmp = image.ToBitmap ();
                 bmp.Save (filename, ImageFormat.Jpeg);

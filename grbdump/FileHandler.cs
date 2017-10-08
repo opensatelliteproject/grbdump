@@ -4,6 +4,10 @@ using OpenSatelliteProject.GRB.Headers;
 using OpenSatelliteProject;
 using System.Collections.Generic;
 using OpenSatelliteProject.IMTools;
+using System.Threading.Tasks;
+using OpenSatelliteProject.GRB.Product;
+using OpenSatelliteProject.GRB;
+using System.Linq;
 
 namespace grbdump {
     public static class GRBFileHandler {
@@ -11,7 +15,13 @@ namespace grbdump {
         public static void HandleFile(string filename, GRBGenericHeader header) {
             string dir = Path.GetDirectoryName(filename);
             string ofilename = header.filename ?? Path.GetFileName (filename);
-            string f = Path.Combine (FileHandler.FinalFileFolder, $"{header.apid:X3}");
+
+            if (Tools.IsXML(filename)) {
+                ofilename = ofilename.Replace(".grb", ".xml");
+            }
+
+			string productFolder = Products.getFolderByAPID(header.apid);
+            string f = Path.Combine (FileHandler.FinalFileFolder, productFolder);
             try {
                 Directory.CreateDirectory (f);
             } catch (IOException e) {
@@ -27,22 +37,33 @@ namespace grbdump {
             }
 
             try {
-                // UIConsole.Log($"Moving File {filename} to {f}");
-                // UIConsole.Log($"New Generic File at {f}");
                 File.Move(filename, f);
             } catch (IOException e) {
                 UIConsole.Error(String.Format("Error moving file {0} to {1}: {2}", filename, f, e));
             }
         }
 
-        static readonly Dictionary<string, ImageAssembler> ImageCache = new Dictionary<string, ImageAssembler> ();
+		static readonly Dictionary<string, ImageAssembler> ImageCache = new Dictionary<string, ImageAssembler>();
+		static readonly Dictionary<string, ImageAssembler> DQFCache = new Dictionary<string, ImageAssembler>();
         static readonly Dictionary<string, ImageAssembler> BigImageCache = new Dictionary<string, ImageAssembler> ();
         static readonly Dictionary<int, ulong> APIDStamp = new Dictionary<int, ulong>();
 
         public static void HandleFile(string filename, GRBImageHeader header) {
             string dir = Path.GetDirectoryName(filename);
             string ofilename = header.filename ?? Path.GetFileName (filename);
-            string bPath = Path.Combine ($"{header.apid:X3}");
+
+            // Separate DQF
+            string dqfFilename = $"{filename}.dqf";
+			try {
+                byte[] buffer = File.ReadAllBytes(filename);
+                buffer = buffer.Skip((int)header.dqfOffset).ToArray();
+                File.WriteAllBytes(dqfFilename, buffer);
+			}
+			catch (Exception) { }
+
+
+            string productFolder = Products.getFolderByAPID (header.apid);
+            string bPath = productFolder;
             string zPath = Path.Combine (bPath, $"{header.epoch:D16}", $"{header.sequence:D8}");
             string f = Path.Combine (FileHandler.FinalFileFolder, zPath);
 
@@ -54,12 +75,15 @@ namespace grbdump {
 
             if (!ImageCache.ContainsKey (zPath)) {
                 ImageCache.Add (zPath, new ImageAssembler ((int) header.width, (int)header.height));
+                DQFCache.Add(zPath, new ImageAssembler((int)header.width, (int)header.height));
             }
 
             ImageCache [zPath].AppendJ2K (filename);
+            DQFCache[zPath].AppendJ2K(dqfFilename);
 
             try {
                 File.Delete (filename);
+                File.Delete(dqfFilename);
             } catch (IOException e) {
                 UIConsole.Error ($"Error erasing file {filename}: {e}");
             }
@@ -71,25 +95,42 @@ namespace grbdump {
                 File.WriteAllText($"{f}.txt", header.ToString());
                 ProcessBigImage (bPath, ImageCache [zPath], header);
                 ImageCache.Remove (zPath);
+                DQFCache[zPath].SavePGM($"{f}.dqf.pgm");
+                DQFCache.Remove(zPath);
             }
         }
 
         static void ProcessBigImage(string bPath, ImageAssembler segment, GRBImageHeader header) {
-            // UIConsole.Debug ($"Processing BigImage for {bPath}");
-            if (!BigImageCache.ContainsKey (bPath)) {
-                // UIConsole.Debug ($"Starting for {bPath}");
-                BigImageCache [bPath] = new ImageAssembler (segment.Width, segment.Height);
-                APIDStamp [header.apid] = header.epoch;
-            } else if (APIDStamp.ContainsKey(header.apid) && APIDStamp [header.apid] != header.epoch) {
-                string outfolder = Path.Combine (FileHandler.FinalFileFolder, bPath, header.epoch.ToString());
-                UIConsole.Log ($"New PRODUCT for {header.apid:X3}. Dumping Old one at {outfolder}.pgm");
-                BigImageCache [bPath].AsyncSavePGM ($"{outfolder}.pgm");
-                BigImageCache [bPath].AsyncSavePNG ($"{outfolder}.png");
-                BigImageCache [bPath] = new ImageAssembler (segment.Width, segment.Height);
-                APIDStamp [header.apid] = header.epoch;
+            int apid = header.apid;
+            ulong currentEpoch = header.epoch;
+            string imKey = $"{apid:X3}-{currentEpoch}";
+			var product = Products.getProductByAPID(apid);
+			var imsz = (ImageSize)product.Meta[1];
+
+            if (APIDStamp.ContainsKey(apid) && APIDStamp[apid] != currentEpoch) {
+                ulong oldEpoch = APIDStamp[apid];
+				string oldImKey = $"{apid:X3}-{oldEpoch}";
+				string outfolder = Path.Combine(FileHandler.FinalFileFolder, bPath, oldEpoch.ToString());
+				UIConsole.Log($"New {product.Name} at {outfolder}.pgm");
+				Task.Run(async () => {
+					var imas = BigImageCache[oldImKey];
+                    // UIConsole.Log($"Saving{outfolder}.pgm");
+					await imas.AsyncSavePGM($"{outfolder}.pgm");
+					// UIConsole.Log($"Saving{outfolder}.png");
+					await imas.AsyncSavePNG($"{outfolder}.png");
+					BigImageCache[oldImKey] = null;
+				});
+
+                BigImageCache[imKey] = new ImageAssembler(imsz.Width, imsz.Height, currentEpoch);
+                APIDStamp[apid] = currentEpoch;
+				// UIConsole.Debug($"Starting for {imKey} with expected size ({imsz.Width}, {imsz.Height})");
+            } else if (!BigImageCache.ContainsKey (imKey)) {
+                BigImageCache [imKey] = new ImageAssembler (imsz.Width, imsz.Height, currentEpoch);
+                APIDStamp[apid] = currentEpoch;
+                // UIConsole.Debug($"Starting for {imKey} with expected size ({imsz.Width}, {imsz.Height})");
             }
-            UIConsole.Log ($"{header.apid:X3} - Drawing {header.sequence} at {header.ulX}, {header.ulY}");
-            BigImageCache [bPath].DrawAt (segment.Image, (int) header.ulX, (int) header.ulY + (int)header.rowOffset, true); // rowOffset to int might be bad
+            // UIConsole.Debug ($"{header.apid:X3} - Drawing {header.sequence} at {header.ulX}, {header.ulY}");
+            BigImageCache [imKey].DrawAt (segment.Image, (int) header.ulX, (int) header.ulY + (int)header.rowOffset, true); // rowOffset to int might be bad
         }
     }
 }

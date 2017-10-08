@@ -110,7 +110,7 @@ namespace grbdump {
 
                 if (msdu.Sequence == SequenceType.FIRST_SEGMENT || msdu.Sequence == SequenceType.SINGLE_DATA) {
                     if (startnum != -1) {
-                        UIConsole.Warn("Received First Segment but last data wasn't finished! Forcing dump.");
+                        // UIConsole.Warn("Received First Segment but last data wasn't finished! Forcing dump.");
                         // This can only happen for multi-segment file.
                         filename = Path.Combine(FileHandler.TemporaryFileFolder, channelId.ToString());
                         filename = Path.Combine(filename, $"{lastMSDU.APID}_{lastMSDU.Version}.lrit");

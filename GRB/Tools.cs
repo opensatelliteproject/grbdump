@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace OpenSatelliteProject.GRB {
     public static class Tools {
@@ -31,6 +32,23 @@ namespace OpenSatelliteProject.GRB {
                 }
             }
             Console.WriteLine (sb);
+        }
+        private static readonly string xmlHead = "<?xml";
+        public static bool IsXML(string filename) {
+            byte[] buffer = new byte[xmlHead.Length];
+			try {
+				using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read)) {
+					fs.Read(buffer, 0, buffer.Length);
+					fs.Close();
+                    bool ok = true;
+                    for (int i = 0; i < xmlHead.Length; i++) {
+                        ok &= (xmlHead[i] == buffer[i]);
+                    }
+                    return ok;
+				}
+			} catch (Exception) {}
+
+            return false;
         }
     }
 }

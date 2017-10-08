@@ -97,10 +97,9 @@ namespace OpenSatelliteProject.GRB {
         #region Builders / Parsers
 
         public static MSDU parseMSDU(byte[] data) {
-            MSDU msdu = new MSDU();
-
-            msdu.PrimaryHeader = data.Take (6).ToArray ();
-
+            MSDU msdu = new MSDU {
+                PrimaryHeader = data.Take(6).ToArray()
+            };
             byte[] ob = data.Take(2).ToArray();
             if (BitConverter.IsLittleEndian) {
                 Array.Reverse(ob);
@@ -131,12 +130,7 @@ namespace OpenSatelliteProject.GRB {
 
             msdu.PacketLength = BitConverter.ToUInt16(ob, 0) - 3;
             data = data.Skip(6).ToArray();
-            /*if (msdu.HasSecondHeader) {
-                msdu.SecondHeader = data.Take (8).ToArray ();
-                // data = data.Skip (8).ToArray ();
-            }
-            */
-
+            /*
             if (msdu.HasSecondHeader) {
                 msdu.SecondHeader = data.Take (8).ToArray ();
                 var dseb = msdu.SecondHeader.Take (2).ToArray ();
@@ -162,13 +156,12 @@ namespace OpenSatelliteProject.GRB {
                 var grbPayloadVariant2 = ((grbS [1] & 3) << 3) + ((grbS [0] & 0xE0) >> 5);
                 var assemblerIdentifier = (grbSU & 0xC00) >> 10;
                 var systemEnvironment = (grbSU & 0x9000) >> 12;
-                /*
+
                 Console.WriteLine ($"GRB Version: {grbVersion}");
                 Console.WriteLine ($"GRB Payload: {grbPayloadVariant} {grbPayloadVariant2}");
                 Console.WriteLine ($"Assembler Identifier: {assemblerIdentifier}");
                 Console.WriteLine ($"System Environment: {systemEnvironment}");
-                */
-            }
+            }*/
             if (data.Length > msdu.PacketLength + 4) {
                 msdu.RemainingData = data.Skip(msdu.PacketLength+ 4).ToArray();
                 data = data.Take(msdu.PacketLength+ 4).ToArray();
