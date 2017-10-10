@@ -111,7 +111,6 @@ namespace grbdump {
                 ulong oldEpoch = APIDStamp[apid];
 				string oldImKey = $"{apid:X3}-{oldEpoch}";
 				string outfolder = Path.Combine(FileHandler.FinalFileFolder, bPath, oldEpoch.ToString());
-				UIConsole.Log($"New {product.Name} at {outfolder}.pgm");
 				Task.Run(async () => {
 					var imas = BigImageCache[oldImKey];
                     // UIConsole.Log($"Saving{outfolder}.pgm");
@@ -119,6 +118,7 @@ namespace grbdump {
 					// UIConsole.Log($"Saving{outfolder}.png");
 					await imas.AsyncSavePNG($"{outfolder}.png");
 					BigImageCache[oldImKey] = null;
+					UIConsole.Log($"New {product.Name} at {outfolder}.pgm");
 				});
 
                 BigImageCache[imKey] = new ImageAssembler(imsz.Width, imsz.Height, currentEpoch);

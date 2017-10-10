@@ -59,7 +59,7 @@ namespace OpenSatelliteProject.IMTools {
         }
 
         public void Resize(int newWidth, int newHeight) {
-            Console.WriteLine ($"Resizing to {newWidth}, {newHeight} from {Width}, {Height}");
+            // Console.WriteLine ($"Resizing to {newWidth}, {newHeight} from {Width}, {Height}");
             if (Height != newHeight) {
                 Array.Resize (ref data, newHeight);
                 for (int y = Height; y < newHeight; y++) {

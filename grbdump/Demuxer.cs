@@ -1,34 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Diagnostics;
-using OpenSatelliteProject.GRB;
-using OpenSatelliteProject.GRB.Headers;
-using OpenSatelliteProject.GRB.Enum;
-using OpenSatelliteProject.PacketData;
 using OpenSatelliteProject;
 
 namespace grbdump {
     public class Demuxer {
-        private readonly int FRAMESIZE = 2042;
+        readonly int FRAMESIZE = 2042;
         /// <summary>
         /// More than that, we will not count as loss, but as a corrupted frame.
         /// </summary>
-        private readonly int MAX_ACCOUTABLE_LOSSES = 1000;
+        readonly int MAX_ACCOUTABLE_LOSSES = 1000;
 
-        private Dictionary<int, OpenSatelliteProject.GRB.MSDU> temporaryStorage;
+        readonly Dictionary<int, OpenSatelliteProject.GRB.MSDU> temporaryStorage;
 
-        private int lastAPID;
-        private int lastFrame;
-        private int startnum = -1;
-        private int endnum = -1;
-        private string filename;
-        private int channelId;
-        private GRBGenericHeader genericFileHeader;
-        private GRBImageHeader imageFileHeader;
-        private byte[] buffer;
-        private OpenSatelliteProject.GRB.MSDU lastMSDU;
+        int lastAPID;
+        int lastFrame;
+        int channelId;
+        byte[] buffer;
+		readonly MSDUManager msduManager;
 
         public int CRCFails { get; set; }
         public int Bugs { get; set; }
@@ -47,7 +37,7 @@ namespace grbdump {
             IgnoreCounterJump = true;
         }
 
-        public Demuxer() {
+        public Demuxer(MSDUManager msduManager) {
             temporaryStorage = new Dictionary<int, OpenSatelliteProject.GRB.MSDU>();
             buffer = new byte[0];
             lastAPID = -1;
@@ -58,6 +48,7 @@ namespace grbdump {
             FrameJumps = 0;
             Bugs = 0;
             Packets = 0;
+            this.msduManager = msduManager;
         }
 
         public Tuple<int, byte[]> CreatePacket(byte[] data) {
@@ -75,7 +66,7 @@ namespace grbdump {
                 if (msdu.RemainingData.Length > 0 || msdu.Full) {
                     data = msdu.RemainingData;
                     msdu.RemainingData = new byte[0];
-                    FinishMSDU(msdu);
+                    msduManager.FinishMSDU(msdu);
                     temporaryStorage.Remove(msdu.APID);
                     apid = -1;
                 } else {
@@ -83,125 +74,6 @@ namespace grbdump {
                 }
             }
             return Tuple.Create(apid, new byte[0]);
-        }
-
-        public void FinishMSDU(OpenSatelliteProject.GRB.MSDU msdu) {
-            try {
-                if (msdu.APID == 2047) {
-                    // Skip fill packet
-                    return;
-                }
-
-                bool firstOrSinglePacket = msdu.Sequence == SequenceType.FIRST_SEGMENT || msdu.Sequence == SequenceType.SINGLE_DATA;
-
-                Packets++;
-
-                if (!msdu.Valid) {
-                    CRCFails++;
-                }
-
-                if (!msdu.Valid || !msdu.Full) {
-                    if (msdu.FrameLost) {
-                        UIConsole.Error($"Lost some frames on MSDU, the file will be corrupted. CRC Match: {msdu.Valid} - Size Match: {msdu.Full}");
-                    } else {
-                        UIConsole.Error($"Corrupted MSDU. CRC Match: {msdu.Valid} - Size Match: {msdu.Full}");
-                    }
-                }
-
-                if (msdu.Sequence == SequenceType.FIRST_SEGMENT || msdu.Sequence == SequenceType.SINGLE_DATA) {
-                    if (startnum != -1) {
-                        // UIConsole.Warn("Received First Segment but last data wasn't finished! Forcing dump.");
-                        // This can only happen for multi-segment file.
-                        filename = Path.Combine(FileHandler.TemporaryFileFolder, channelId.ToString());
-                        filename = Path.Combine(filename, $"{lastMSDU.APID}_{lastMSDU.Version}.lrit");
-
-                        GRBFileHandler.HandleFile(filename, genericFileHeader);
-                        startnum = -1;
-                        endnum = -1;
-                    }
-
-                    PayloadType type = EnumHelpers.APID2Type(msdu.APID);
-                    if (type == PayloadType.Generic) {
-                        genericFileHeader = new GRBGenericHeader(msdu.APID, msdu.Data.Skip(8).Take(21).ToArray());
-                    } else {
-                        imageFileHeader = new GRBImageHeader(msdu.APID, msdu.Data.Skip(8).Take(34).ToArray());
-                    }
-                    // fileHeader = FileParser.GetHeader(msdu.Data.Skip(10).ToArray());
-
-                    if (msdu.Sequence == SequenceType.FIRST_SEGMENT) {
-                        startnum = msdu.PacketNumber;
-                    }
-                } else if (msdu.Sequence == SequenceType.LAST_SEGMENT) {
-                    endnum = msdu.PacketNumber;
-
-                    if (startnum == -1) {
-                        // Orphan Packet
-                        endnum = -1;
-                        return;
-                    }
-                } else if (msdu.Sequence != SequenceType.SINGLE_DATA && startnum == -1) {
-                    // Orphan Packet
-                    return;
-                }
-
-                // LRIT EMWIN
-                /* Uncomment to enable EMWIN Ingestor 
-                 * Its broken right now
-                if (fileHeader.PrimaryHeader.FileType == FileTypeCode.EMWIN) {
-                    //Ingestor
-                    int offset = 10 + (int)fileHeader.PrimaryHeader.HeaderLength;
-                    EMWIN.Ingestor.Process(msdu.Data.Skip(offset).ToArray());
-                    return;
-                }
-                */
-
-                string path = Path.Combine(FileHandler.TemporaryFileFolder, channelId.ToString());
-                if (!Directory.Exists(path)) {
-                    Directory.CreateDirectory(path);
-                }
-
-                filename = Path.Combine(path, $"{msdu.APID}_{msdu.Version}.lrit");
-
-                int totalOffset;
-
-                if (firstOrSinglePacket) {
-                    totalOffset = 8;
-                    PayloadType type = EnumHelpers.APID2Type(msdu.APID);
-                    if (type == PayloadType.Generic) {
-                        totalOffset += 21;
-                    } else {
-                        totalOffset += 34;
-                    }
-                } else {
-                    totalOffset = 8;
-                }
-
-                byte[] dataToSave = msdu.Data.Skip(totalOffset).ToArray(); 
-                dataToSave = dataToSave.Take(dataToSave.Length - 4).ToArray(); // Remove CRC
-                lastMSDU = msdu;
-
-                using (FileStream fs = new FileStream(filename, firstOrSinglePacket ? FileMode.Create : FileMode.Append, FileAccess.Write)) {
-                    using (BinaryWriter sw = new BinaryWriter(fs)) {
-                        sw.Write(dataToSave);
-                        sw.Flush();
-                    }
-                }
-
-                if (msdu.Sequence == SequenceType.LAST_SEGMENT || msdu.Sequence == SequenceType.SINGLE_DATA) {
-
-                    PayloadType type = EnumHelpers.APID2Type(msdu.APID);
-                    if (type == PayloadType.Generic) {
-                        GRBFileHandler.HandleFile(filename, genericFileHeader);
-                    } else {
-                        GRBFileHandler.HandleFile(filename, imageFileHeader);
-                    }
-
-                    startnum = -1;
-                    endnum = -1;
-                }
-            } catch (Exception e) {
-                UIConsole.Error(String.Format("Exception on FinishMSDU: {0}", e));
-            }
         }
 
         public void ParseBytes(byte[] data) {
@@ -333,7 +205,7 @@ namespace grbdump {
                         StackFrame callStack = new StackFrame(0, true);
                         UIConsole.Debug(String.Format("Problem at line {0} in file {1}! Not full! Check code for bugs!", callStack.GetFileLineNumber(), callStack.GetFileName()));
                     }
-                    FinishMSDU(temporaryStorage[lastAPID]);
+                    msduManager.FinishMSDU(temporaryStorage[lastAPID]);
                     temporaryStorage.Remove(lastAPID);
                     lastAPID = -1;
                 }
@@ -354,7 +226,7 @@ namespace grbdump {
                     lastAPID = p.Item1;
                     buffer = p.Item2;
                 } else if (buffer.Length > 0) {
-                    Console.WriteLine("EDGE CASE!");
+                    UIConsole.Error("EDGE CASE! PLEASE REPORT THIS MESSAGE");
                 } else {
                     temporaryStorage[lastAPID].addDataBytes(data);
                 }

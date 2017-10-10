@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using OpenSatelliteProject.PacketData;
+using OpenSatelliteProject.Tools;
 
 namespace OpenSatelliteProject.GRB {
     public class MSDU {
@@ -30,6 +31,8 @@ namespace OpenSatelliteProject.GRB {
         public byte[] RemainingData { get; set; }
 
         public bool FrameLost { get; set; }
+
+        public string TemporaryFilename { get; set; }
 
         public bool Full { 
             get {
@@ -100,6 +103,7 @@ namespace OpenSatelliteProject.GRB {
             MSDU msdu = new MSDU {
                 PrimaryHeader = data.Take(6).ToArray()
             };
+
             byte[] ob = data.Take(2).ToArray();
             if (BitConverter.IsLittleEndian) {
                 Array.Reverse(ob);
@@ -112,7 +116,6 @@ namespace OpenSatelliteProject.GRB {
             msdu.HasSecondHeader = ((o & 0x800) >> 11) > 0;
             msdu.APID = o & 0x7FF;
 
-
             ob = data.Skip(2).Take(2).ToArray();
             if (BitConverter.IsLittleEndian) {
                 Array.Reverse(ob);
@@ -121,7 +124,9 @@ namespace OpenSatelliteProject.GRB {
             o = BitConverter.ToUInt16(ob, 0);
 
             msdu.Sequence = (SequenceType)((o & 0xC000) >> 14);
-            msdu.PacketNumber = (o & 0x3FFF);
+			msdu.PacketNumber = (o & 0x3FFF);
+
+			msdu.TemporaryFilename = $"{msdu.APID}.grbtmp";
 
             ob = data.Skip(4).Take(2).ToArray();
             if (BitConverter.IsLittleEndian) {

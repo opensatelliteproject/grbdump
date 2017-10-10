@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace OpenSatelliteProject.GRB {
     public static class Tools {
@@ -49,7 +50,15 @@ namespace OpenSatelliteProject.GRB {
 			} catch (Exception) {}
 
             return false;
-        }
-    }
+		}
+
+        static readonly Random random = new Random();
+
+        public static string RandomString(int length) {
+            var buff = new byte[length];
+            random.NextBytes(buff);
+            return string.Join("", buff.Select(b => b.ToString("X2")));
+		}
+	}
 }
 

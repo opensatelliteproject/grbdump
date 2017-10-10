@@ -62,6 +62,9 @@
     <Compile Include="Connector.cs" />
     <Compile Include="Demuxer.cs" />
     <Compile Include="FileHandler.cs" />
+    <Compile Include="ChannelManager.cs" />
+    <Compile Include="MSDUManager.cs" />
+    <Compile Include="FileHandlerManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

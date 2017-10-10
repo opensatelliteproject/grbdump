@@ -21,8 +21,8 @@ namespace grbdump {
         public event ChannelDataEvent ChannelDataAvailable;
         #endregion
 
-        private Thread channelDataThread;
-        private bool channelDataThreadRunning;
+        Thread channelDataThread;
+        bool channelDataThreadRunning;
 
         public Connector () {
             channelDataThread = new Thread(new ThreadStart(channelDataLoop)) {
