@@ -5,7 +5,7 @@ using System.Diagnostics;
 using OpenSatelliteProject;
 
 namespace grbdump {
-    public class Demuxer {
+    class Demuxer {
         readonly int FRAMESIZE = 2042;
         /// <summary>
         /// More than that, we will not count as loss, but as a corrupted frame.
@@ -58,7 +58,7 @@ namespace grbdump {
                     return Tuple.Create(-1, data);
                 }
 
-                OpenSatelliteProject.GRB.MSDU msdu = OpenSatelliteProject.GRB.MSDU.parseMSDU(data);
+                OpenSatelliteProject.GRB.MSDU msdu = OpenSatelliteProject.GRB.MSDU.ParseMSDU(data);
 
                 temporaryStorage[msdu.APID] = msdu;
                 apid = msdu.APID;
@@ -195,7 +195,7 @@ namespace grbdump {
 
                 if (lastAPID != -1) {
                     if (fhp > 0) {
-                        temporaryStorage[lastAPID].addDataBytes(buffer.Concat(data.Take(fhp)).ToArray());
+                        temporaryStorage[lastAPID].AddDataBytes(buffer.Concat(data.Take(fhp)).ToArray());
                         data = data.Skip(fhp).ToArray();
                         fhp = 0;
                     }
@@ -228,7 +228,7 @@ namespace grbdump {
                 } else if (buffer.Length > 0) {
                     UIConsole.Error("EDGE CASE! PLEASE REPORT THIS MESSAGE");
                 } else {
-                    temporaryStorage[lastAPID].addDataBytes(data);
+                    temporaryStorage[lastAPID].AddDataBytes(data);
                 }
             }
         }

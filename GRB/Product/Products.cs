@@ -22,7 +22,7 @@ namespace OpenSatelliteProject.GRB.Product {
 
         public static string getNameByAPID(int APID) {
             var p = getProductByAPID (APID);
-            return p == null ? "Unknown Product {APID:X3}" : p.Name;
+            return p == null ? $"Unknown Product {APID:X3}" : p.Name;
         }
 
         static Products() {

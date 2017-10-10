@@ -3,7 +3,7 @@ using System.Threading;
 using OpenSatelliteProject;
 
 namespace grbdump {
-    public class ChannelManager {
+    class ChannelManager {
         const int MAX_QUEUE_LENGTH = 32768;
         readonly ConcurrentQueue<byte[]> packets;
 
@@ -33,7 +33,7 @@ namespace grbdump {
                 running = true;
                 channelThread = new Thread(new ThreadStart(ThreadLoop)) {
                     IsBackground = true,
-                    Priority = ThreadPriority.Highest,
+                    Priority = ThreadPriority.AboveNormal,
                 };
                 channelThread.Start();
             } else {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using OpenSatelliteProject.PacketData;
-using OpenSatelliteProject.Tools;
 
 namespace OpenSatelliteProject.GRB {
     public class MSDU {
@@ -18,7 +17,6 @@ namespace OpenSatelliteProject.GRB {
         public bool HasSecondHeader { get; set; }
 
         public byte[] PrimaryHeader { get; set; }
-        public byte[] SecondHeader { get; set; }
 
         public SequenceType Sequence { get; set; }
 
@@ -36,7 +34,7 @@ namespace OpenSatelliteProject.GRB {
 
         public bool Full { 
             get {
-                return Data.Length == PacketLength + 4;
+                return Data.Length == PacketLength;
             } 
         }
 
@@ -53,12 +51,11 @@ namespace OpenSatelliteProject.GRB {
         public bool Valid {
             get {
                 if (Data.Length > 4) {
-                    var gotCRC = PrimaryHeader.Concat(Data.Take (Data.Length - 4)).ToArray ().CRC32 ();
+                    var gotCRC = PrimaryHeader.Concat(Data.Take(Data.Length - 4)).ToArray().CRC32();
                     return gotCRC == CRC;
-                } else {
-                    // Not enough data
-                    return false;
-                }
+                }                     
+                // Not enough data
+                return false;
             }
         }
 
@@ -72,26 +69,21 @@ namespace OpenSatelliteProject.GRB {
 
         #region Constructor / Destructor
 
-        private MSDU() {
-        }
+        MSDU() {}
 
         #endregion
 
         #region Methods
 
-        public void addDataBytes(byte[] data) {            
-            /*if (data.Length + Data.Length > PacketLength + 2) {
-                Console.WriteLine("Overflow in MSDU!");
-            }*/
+        public void AddDataBytes(byte[] data) {            
             byte[] newData = new byte[Data.Length + data.Length];
             Array.Copy(Data, newData, Data.Length);
             Array.Copy(data, 0, newData, Data.Length, data.Length);
-            if (newData.Length > PacketLength + 4) {
-                Data = newData.Take(PacketLength + 4).ToArray();
+            if (newData.Length > PacketLength) {
+                Data = newData.Take(PacketLength).ToArray();
             } else {
                 Data = newData;
             }
-
         }
 
         #endregion
@@ -99,7 +91,7 @@ namespace OpenSatelliteProject.GRB {
 
         #region Builders / Parsers
 
-        public static MSDU parseMSDU(byte[] data) {
+        public static MSDU ParseMSDU(byte[] data) {
             MSDU msdu = new MSDU {
                 PrimaryHeader = data.Take(6).ToArray()
             };
@@ -133,43 +125,11 @@ namespace OpenSatelliteProject.GRB {
                 Array.Reverse(ob);
             }
 
-            msdu.PacketLength = BitConverter.ToUInt16(ob, 0) - 3;
+            msdu.PacketLength = BitConverter.ToUInt16(ob, 0) + 1;
             data = data.Skip(6).ToArray();
-            /*
-            if (msdu.HasSecondHeader) {
-                msdu.SecondHeader = data.Take (8).ToArray ();
-                var dseb = msdu.SecondHeader.Take (2).ToArray ();
-                var mseb = msdu.SecondHeader.Skip (2).Take (4).ToArray ();
-                var grbS = msdu.SecondHeader.Skip (6).Take (2).ToArray ();
-
-                if (BitConverter.IsLittleEndian) {
-                    Array.Reverse (dseb);
-                    Array.Reverse (mseb);
-                    //Array.Reverse (grbS);
-                }
-
-                var daysSinceEpoch = BitConverter.ToUInt16(dseb, 0);
-                var msOfDay = BitConverter.ToUInt32 (mseb, 0);
-                var dt = new DateTime (2000, 1, 1, 0, 0, 0);
-                dt = dt.AddDays (daysSinceEpoch);
-                dt = dt.AddMilliseconds (msOfDay);
-
-                var grbSU = BitConverter.ToUInt16 (grbS, 0);
-
-                var grbVersion = grbSU & 0x1F;
-                var grbPayloadVariant = (grbSU & 0x3E0) >> 5;
-                var grbPayloadVariant2 = ((grbS [1] & 3) << 3) + ((grbS [0] & 0xE0) >> 5);
-                var assemblerIdentifier = (grbSU & 0xC00) >> 10;
-                var systemEnvironment = (grbSU & 0x9000) >> 12;
-
-                Console.WriteLine ($"GRB Version: {grbVersion}");
-                Console.WriteLine ($"GRB Payload: {grbPayloadVariant} {grbPayloadVariant2}");
-                Console.WriteLine ($"Assembler Identifier: {assemblerIdentifier}");
-                Console.WriteLine ($"System Environment: {systemEnvironment}");
-            }*/
-            if (data.Length > msdu.PacketLength + 4) {
-                msdu.RemainingData = data.Skip(msdu.PacketLength+ 4).ToArray();
-                data = data.Take(msdu.PacketLength+ 4).ToArray();
+            if (data.Length > msdu.PacketLength) {
+                msdu.RemainingData = data.Skip(msdu.PacketLength).ToArray();
+                data = data.Take(msdu.PacketLength).ToArray();
             } else {
                 msdu.RemainingData = new byte[0];
             }

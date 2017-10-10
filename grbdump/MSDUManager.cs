@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,13 +12,13 @@ using OpenSatelliteProject.PacketData;
 using OpenSatelliteProject.Tools;
 
 namespace grbdump {
-    public class MSDUManager {
-		const int MAX_QUEUE_LENGTH = 1024;
+    class MSDUManager {
+		const int MAX_QUEUE_LENGTH = 0xFFFF;
 		readonly ConcurrentQueue<OpenSatelliteProject.GRB.MSDU> packets;
 
 		bool running;
 		Thread channelThread;
-        FileHandlerManager fileHandleManager;
+        readonly FileHandlerManager fileHandleManager;
 
         public MSDUManager(FileHandlerManager fileHandleManager) {
 			packets = new ConcurrentQueue<OpenSatelliteProject.GRB.MSDU>();
@@ -41,7 +42,7 @@ namespace grbdump {
 				running = true;
 				channelThread = new Thread(new ThreadStart(ThreadLoop)) {
 					IsBackground = true,
-                    Priority = ThreadPriority.AboveNormal,
+                    Priority = ThreadPriority.Highest,
 				};
 				channelThread.Start();
 			} else {
@@ -66,7 +67,25 @@ namespace grbdump {
 				if (packets.TryDequeue(out msdu)) {
                     ProcessMSDU(msdu);
 				}
-				Thread.Yield();
+
+                List<int> keys = msduCache.Keys.ToList();
+                keys.ForEach(k => {
+                    var minfo = msduCache[k];
+                    if (minfo.Expired) {
+                        UIConsole.Warn($"Product {k:X3} expired. Dumping...");
+						string msduFile = Path.Combine(FileHandler.TemporaryFileFolder, minfo.FileName);
+						string target = Path.Combine(FileHandler.TemporaryFileFolder, $"{k:X3}-{LLTools.TimestampMS()}-{Tools.RandomString(8)}");
+						File.Move(msduFile, target);
+						if (EnumHelpers.APID2Type(k) == PayloadType.Generic) {
+							fileHandleManager.NewFile(new Tuple<string, object>(target, minfo.GenericHeader));
+						} else {
+							fileHandleManager.NewFile(new Tuple<string, object>(target, minfo.ImageHeader));
+						}
+						msduCache.Remove(k);
+                    }
+                });
+				
+                Thread.Yield();
 			}
 			UIConsole.Debug("Channel Thread stopped");
 		}
@@ -74,12 +93,7 @@ namespace grbdump {
         #region MSDU Processing Variables
         uint Packets = 0;
         uint CRCFails = 0;
-        int startNum = -1;
-        int endNum = -1;
-        string filename;
-		OpenSatelliteProject.GRB.MSDU lastMSDU;
-		GRBGenericHeader genericFileHeader;
-		GRBImageHeader imageFileHeader;
+        readonly Dictionary<int, MSDUInfo> msduCache = new Dictionary<int, MSDUInfo>();
         #endregion
 
         void ProcessMSDU(OpenSatelliteProject.GRB.MSDU msdu) {
@@ -105,56 +119,54 @@ namespace grbdump {
 					}
 				}
 
-				if (msdu.Sequence == SequenceType.FIRST_SEGMENT || msdu.Sequence == SequenceType.SINGLE_DATA) {
-					if (startNum != -1) {
-						// UIConsole.Warn("Received First Segment but last data wasn't finished! Forcing dump.");
+                var payloadType = EnumHelpers.APID2Type(msdu.APID);
+
+                if (msdu.Sequence == SequenceType.FIRST_SEGMENT || msdu.Sequence == SequenceType.SINGLE_DATA) {
+                    if (msduCache.ContainsKey(msdu.APID)) {
+                        var minfo = msduCache[msdu.APID];
+                        UIConsole.Warn($"Received First Segment for {msdu.APID:X3} but last data wasn't saved to disk yet! Forcing dump.");
 						// This can only happen for multi-segment file.
-						filename = Path.Combine(FileHandler.TemporaryFileFolder, lastMSDU.TemporaryFilename);
-						string target = Path.Combine(FileHandler.TemporaryFileFolder, $"{lastMSDU.APID}-{LLTools.TimestampMS()}-{Tools.RandomString(8)}");
-						File.Move(filename, target);
-						if (EnumHelpers.APID2Type(msdu.APID) == PayloadType.Generic) {
-							fileHandleManager.NewFile(new Tuple<string, object>(target, genericFileHeader));
+                        string msduFile = Path.Combine(FileHandler.TemporaryFileFolder, minfo.FileName);
+						string target = Path.Combine(FileHandler.TemporaryFileFolder, $"{msdu.APID:X3}-{LLTools.TimestampMS()}-{Tools.RandomString(8)}");
+						File.Move(msduFile, target);
+                        if (payloadType == PayloadType.Generic) {
+							fileHandleManager.NewFile(new Tuple<string, object>(target, minfo.GenericHeader));
 						} else {
-                            fileHandleManager.NewFile(new Tuple<string, object>(target, imageFileHeader));
+                            fileHandleManager.NewFile(new Tuple<string, object>(target, minfo.ImageHeader));
 						}
-						startNum = -1;
-						endNum = -1;
+                        msduCache.Remove(msdu.APID);
 					}
 
-					if (EnumHelpers.APID2Type(msdu.APID) == PayloadType.Generic) {
-						genericFileHeader = new GRBGenericHeader(msdu.APID, msdu.Data.Skip(8).Take(21).ToArray());
-					} else {
-						imageFileHeader = new GRBImageHeader(msdu.APID, msdu.Data.Skip(8).Take(34).ToArray());
-					}
+                    var msInfo = new MSDUInfo() {
+                        APID = msdu.APID,
+						FileName = msdu.TemporaryFilename,
+						GenericHeader = payloadType == PayloadType.Generic ? new GRBGenericHeader(msdu.APID, msdu.Data.Skip(8).Take(21).ToArray()) : null,
+                        ImageHeader = payloadType == PayloadType.ImageData ? new GRBImageHeader(msdu.APID, msdu.Data.Skip(8).Take(34).ToArray()) : null,
+                    };
 
-					if (msdu.Sequence == SequenceType.FIRST_SEGMENT) {
-						startNum = msdu.PacketNumber;
-					}
-				} else if (msdu.Sequence == SequenceType.LAST_SEGMENT) {
-					endNum = msdu.PacketNumber;
-
-					if (startNum == -1) {
-						// Orphan Packet
-						endNum = -1;
-						return;
-					}
-				} else if (msdu.Sequence != SequenceType.SINGLE_DATA && startNum == -1) {
-					// Orphan Packet
-					return;
+                    msduCache.Add(msdu.APID, msInfo);
+                } else if (msdu.Sequence == SequenceType.LAST_SEGMENT || msdu.Sequence == SequenceType.CONTINUED_SEGMENT) {
+                    if (!msduCache.ContainsKey(msdu.APID)) {
+                        UIConsole.Warn("Orphan Packet!");
+                        return;
+                    }
 				}
 
-				string path = FileHandler.TemporaryFileFolder;
+                var msduInfo = msduCache[msdu.APID];
+                msduInfo.Refresh();
+
+                string path = FileHandler.TemporaryFileFolder;
 				if (!Directory.Exists(path)) {
 					Directory.CreateDirectory(path);
 				}
 
-				filename = Path.Combine(FileHandler.TemporaryFileFolder, msdu.TemporaryFilename);
+                string filename = Path.Combine(FileHandler.TemporaryFileFolder, msduInfo.FileName);
 
 				int totalOffset;
 
 				if (firstOrSinglePacket) {
 					totalOffset = 8;
-					if (EnumHelpers.APID2Type(msdu.APID) == PayloadType.Generic) {
+                    if (payloadType == PayloadType.Generic) {
 						totalOffset += 21;
 					} else {
 						totalOffset += 34;
@@ -165,7 +177,6 @@ namespace grbdump {
 
 				byte[] dataToSave = msdu.Data.Skip(totalOffset).ToArray();
 				dataToSave = dataToSave.Take(dataToSave.Length - 4).ToArray(); // Remove CRC
-				lastMSDU = msdu;
 
 				using (FileStream fs = new FileStream(filename, firstOrSinglePacket ? FileMode.Create : FileMode.Append, FileAccess.Write)) {
 					using (BinaryWriter sw = new BinaryWriter(fs)) {
@@ -175,15 +186,14 @@ namespace grbdump {
 				}
 
 				if (msdu.Sequence == SequenceType.LAST_SEGMENT || msdu.Sequence == SequenceType.SINGLE_DATA) {
-                    string target = Path.Combine(FileHandler.TemporaryFileFolder, $"{lastMSDU.APID}-{LLTools.TimestampMS()}-{Tools.RandomString(8)}");
+                    string target = Path.Combine(FileHandler.TemporaryFileFolder, $"{msdu.APID:X3}-{LLTools.TimestampMS()}-{Tools.RandomString(8)}");
 					File.Move(filename, target);
-					if (EnumHelpers.APID2Type(msdu.APID) == PayloadType.Generic) {
-						fileHandleManager.NewFile(new Tuple<string, object>(target, genericFileHeader));
+                    if (payloadType == PayloadType.Generic) {
+                        fileHandleManager.NewFile(new Tuple<string, object>(target, msduInfo.GenericHeader));
 					} else {
-						fileHandleManager.NewFile(new Tuple<string, object>(target, imageFileHeader));
+                        fileHandleManager.NewFile(new Tuple<string, object>(target, msduInfo.ImageHeader));
 					}
-					startNum = -1;
-					endNum = -1;
+                    msduCache.Remove(msdu.APID);
 				}
 			} catch (Exception e) {
 				UIConsole.Error(String.Format("Exception on FinishMSDU: {0}", e));

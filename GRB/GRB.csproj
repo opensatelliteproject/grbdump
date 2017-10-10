@@ -25,7 +25,7 @@
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\OpenSatelliteProject.GRB.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>

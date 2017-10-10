@@ -5,7 +5,7 @@ using System;
 using OpenSatelliteProject.GRB.Headers;
 
 namespace grbdump {
-    public class FileHandlerManager {
+    class FileHandlerManager {
 		const int MAX_QUEUE_LENGTH = 32768;
 		readonly ConcurrentQueue<Tuple<string, object>> packets;
 

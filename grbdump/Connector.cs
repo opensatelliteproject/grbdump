@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 
 namespace grbdump {
-    public class Connector {
+    class Connector {
         public static int ChannelDataServerPort { get; set; }
         public static string ChannelDataServerName { get; set; }
 
@@ -25,9 +25,9 @@ namespace grbdump {
         bool channelDataThreadRunning;
 
         public Connector () {
-            channelDataThread = new Thread(new ThreadStart(channelDataLoop)) {
+            channelDataThread = new Thread(new ThreadStart(ChannelDataLoop)) {
                 IsBackground = true,
-                Priority = ThreadPriority.Highest,
+                Priority = ThreadPriority.AboveNormal,
             };
         }
 
@@ -56,11 +56,11 @@ namespace grbdump {
             }
         }
 
-        private void postChannelData(object data) {
+        void PostChannelData(object data) {
             ChannelDataAvailable?.Invoke((byte[])data);
         }
 
-        private void channelDataLoop() {
+        void ChannelDataLoop() {
             try {
                 UIConsole.Log("Channel Data Loop started");
                 byte[] buffer = new byte[2042];
@@ -81,11 +81,12 @@ namespace grbdump {
                     bool isConnected = true;
                     UIConsole.Log("Channel Data Thread connect");
                     try {
-                        sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        sender.ReceiveTimeout = 5000;
+                        sender = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
+                            ReceiveTimeout = 5000
+                        };
                         sender.Connect(remoteEP);
                         isConnected = true;
-                        UIConsole.Log(String.Format("Socket connected to {0}", sender.RemoteEndPoint.ToString()));
+                        UIConsole.Log($"Socket connected to {sender.RemoteEndPoint}");
                         int nullReceive = 0;
                         while (isConnected) {
                             try {
@@ -105,18 +106,15 @@ namespace grbdump {
                                     }
                                 } else {
                                     nullReceive = 0;
-                                    this.postChannelData(buffer);
+                                    this.PostChannelData(buffer);
                                 }
                             } catch (ArgumentNullException ane) {
-                                UIConsole.Error(String.Format("ArgumentNullException : {0}", ane.ToString()));
+                                UIConsole.Error($"ArgumentNullException : {ane}");
                                 isConnected = false;
-                            } catch (SocketException se) {
-                                // That's usually timeout.  I would say that is best to handle and show some message
-                                // But for now, that would make it confusing for the users. So let's keep without a notice.
-                                //UIConsole.GlobalConsole.Error(String.Format("SocketException : {0}", se.ToString()));
-                                isConnected = false;
+                            } catch (SocketException) {
+								isConnected = false;
                             } catch (Exception e) {
-                                UIConsole.Error(String.Format("Unexpected exception : {0}", e.ToString()));
+                                UIConsole.Error($"Unexpected exception : {e}");
                                 isConnected = false;
                             }
 
@@ -132,11 +130,11 @@ namespace grbdump {
                         sender.Close();
 
                     } catch (ArgumentNullException ane) {
-                        UIConsole.Error(String.Format("ArgumentNullException : {0}", ane.ToString()));
+                        UIConsole.Error($"ArgumentNullException : {ane}");
                     } catch (SocketException se) {
-                        UIConsole.Error(String.Format("SocketException : {0}", se.ToString()));
+                        UIConsole.Error($"SocketException : {se}");
                     } catch (Exception e) {
-                        UIConsole.Error(String.Format("Unexpected exception : {0}", e.ToString()));
+                        UIConsole.Error($"Unexpected exception : {e}");
                     }
                     if (channelDataThreadRunning) {
                         UIConsole.Warn("Socket closed. Waiting 1s before trying again.");
@@ -152,7 +150,7 @@ namespace grbdump {
                         sender.Close();
                     }
                 } catch (Exception e) {
-                    UIConsole.Debug(String.Format("Exception thrown when closing socket: {0} Ignoring.", e.ToString()));
+                    UIConsole.Debug($"Exception thrown when closing socket: {e} Ignoring.");
                 }
 
                 UIConsole.Log("Channel Data Thread closed.");

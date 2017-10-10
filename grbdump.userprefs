@@ -1,19 +1,17 @@
 ﻿<Properties RefactoringSettings.EnableRefactorings="True" StartupConfiguration="{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="grbdump/MSDUManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="grbdump/FileHandler.cs">
     <Files>
-      <File FileName="grbdump/FileHandler.cs" Line="40" Column="1" />
-      <File FileName="GRB/Headers/GRBImageHeader.cs" Line="1" Column="1" />
-      <File FileName="ImageTools/Image16.cs" Line="57" Column="26" />
-      <File FileName="grbdump/ChannelManager.cs" Line="17" Column="31" />
-      <File FileName="grbdump/Connector.cs" Line="28" Column="1" />
-      <File FileName="grbdump/MSDUManager.cs" Line="178" Column="146" />
-      <File FileName="GRB/MSDU.cs" Line="129" Column="42" />
-      <File FileName="grbdump/FileHandlerManager.cs" Line="13" Column="24" />
+      <File FileName="grbdump/ChannelManager.cs" Line="12" Column="34" />
       <File FileName="grbdump/Program.cs" Line="25" Column="52" />
-      <File FileName="grbdump/Demuxer.cs" Line="238" Column="1" />
+      <File FileName="grbdump/Demuxer.cs" Line="8" Column="5" />
+      <File FileName="grbdump/MSDUManager.cs" Line="15" Column="5" />
+      <File FileName="grbdump/FileHandler.cs" Line="61" Column="13" />
+      <File FileName="grbdump/MSDUInfo.cs" Line="5" Column="5" />
+      <File FileName="grbdump/FileHandlerManager.cs" Line="8" Column="5" />
+      <File FileName="grbdump/Connector.cs" Line="8" Column="5" />
     </Files>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Catchpoint exceptionName="System.TypeInitializationException" includeSubclasses="True" />

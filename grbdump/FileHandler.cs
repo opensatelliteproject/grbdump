@@ -10,8 +10,7 @@ using OpenSatelliteProject.GRB;
 using System.Linq;
 
 namespace grbdump {
-    public static class GRBFileHandler {
-
+    static class GRBFileHandler {
         public static void HandleFile(string filename, GRBGenericHeader header) {
             string dir = Path.GetDirectoryName(filename);
             string ofilename = header.filename ?? Path.GetFileName (filename);
@@ -32,14 +31,14 @@ namespace grbdump {
             if (File.Exists(f)) {
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssffff");
                 string ext = Path.GetExtension(f);
-                string append = String.Format("--dup-{0}{1}", timestamp, ext);
-                f = f.Replace(String.Format("{0}", ext), append);
+                string append = $"--dup-{timestamp}{ext}";
+                f = f.Replace(ext, append);
             }
 
             try {
                 File.Move(filename, f);
             } catch (IOException e) {
-                UIConsole.Error(String.Format("Error moving file {0} to {1}: {2}", filename, f, e));
+                UIConsole.Error($"Error moving file {filename} to {f}: {e}");
             }
         }
 
@@ -58,8 +57,7 @@ namespace grbdump {
                 byte[] buffer = File.ReadAllBytes(filename);
                 buffer = buffer.Skip((int)header.dqfOffset).ToArray();
                 File.WriteAllBytes(dqfFilename, buffer);
-			}
-			catch (Exception) { }
+			} catch (Exception) { }
 
 
             string productFolder = Products.getFolderByAPID (header.apid);
@@ -90,12 +88,13 @@ namespace grbdump {
 
             if (ImageCache [zPath].Done) {
                 // UIConsole.Log ($"New image at {f}");
-                ImageCache [zPath].SavePGM ($"{f}.pgm");
-                ImageCache [zPath].SaveJPG ($"{f}.jpg");
-                File.WriteAllText($"{f}.txt", header.ToString());
+                // ImageCache [zPath].SavePGM ($"{f}.pgm");
+                // ImageCache [zPath].SaveJPG ($"{f}.jpg");
+                // File.WriteAllText($"{f}.txt", header.ToString());
                 ProcessBigImage (bPath, ImageCache [zPath], header);
                 ImageCache.Remove (zPath);
-                DQFCache[zPath].SavePGM($"{f}.dqf.pgm");
+                // FIXME: Discarding DQF
+                // DQFCache[zPath].SavePGM($"{f}.dqf.pgm");
                 DQFCache.Remove(zPath);
             }
         }
