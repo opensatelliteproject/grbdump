@@ -6,7 +6,7 @@ using OpenSatelliteProject.GRB.Headers;
 
 namespace grbdump {
     class FileHandlerManager {
-		const int MAX_QUEUE_LENGTH = 32768;
+		const int MAX_QUEUE_LENGTH = 0xFFFFF;
 		readonly ConcurrentQueue<Tuple<string, object>> packets;
 
 		bool running;
@@ -33,7 +33,7 @@ namespace grbdump {
 				running = true;
 				channelThread = new Thread(new ThreadStart(ThreadLoop)) {
 					IsBackground = true,
-                    Priority = ThreadPriority.Normal,
+                    Priority = ThreadPriority.AboveNormal,
 				};
 				channelThread.Start();
 			} else {

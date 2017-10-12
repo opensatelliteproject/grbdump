@@ -4,7 +4,7 @@ using OpenSatelliteProject;
 
 namespace grbdump {
     class ChannelManager {
-        const int MAX_QUEUE_LENGTH = 32768;
+        const int MAX_QUEUE_LENGTH = 0xFFFF;
         readonly ConcurrentQueue<byte[]> packets;
 
         bool running;

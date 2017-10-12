@@ -91,7 +91,7 @@ namespace OpenSatelliteProject.IMTools {
         public async Task AsyncSavePGM(string filename) {
             await Task.Run (() => {
                 image.SavePGM (filename);
-                Console.WriteLine($"File {filename} saved.");
+                // Console.WriteLine($"File {filename} saved.");
             });
         }
 
@@ -100,7 +100,7 @@ namespace OpenSatelliteProject.IMTools {
                 var bmp = image.ToBitmap ();
                 bmp.Save (filename, ImageFormat.Png);
                 bmp.Dispose ();
-                Console.WriteLine($"File {filename} saved.");
+                // Console.WriteLine($"File {filename} saved.");
             });
         }
 
@@ -109,7 +109,7 @@ namespace OpenSatelliteProject.IMTools {
                 var bmp = image.ToBitmap ();
                 bmp.Save (filename, ImageFormat.Jpeg);
                 bmp.Dispose ();
-                Console.WriteLine($"File {filename} saved.");
+                // Console.WriteLine($"File {filename} saved.");
             });
         }
     }

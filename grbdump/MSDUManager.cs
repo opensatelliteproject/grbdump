@@ -107,16 +107,17 @@ namespace grbdump {
 
 				Packets++;
 
-				if (!msdu.Valid) {
-					CRCFails++;
-				}
-
 				if (!msdu.Valid || !msdu.Full) {
 					if (msdu.FrameLost) {
 						UIConsole.Error($"Lost some frames on MSDU, the file will be corrupted. CRC Match: {msdu.Valid} - Size Match: {msdu.Full}");
 					} else {
 						UIConsole.Error($"Corrupted MSDU. CRC Match: {msdu.Valid} - Size Match: {msdu.Full}");
 					}
+				}
+
+				if (!msdu.Valid) {
+					CRCFails++;
+                    return;
 				}
 
                 var payloadType = EnumHelpers.APID2Type(msdu.APID);

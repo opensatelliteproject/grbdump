@@ -47,6 +47,9 @@ namespace OpenSatelliteProject.IMTools {
         }
 
         public Image16 (int width, int height, ushort FillValue = 0xFFFF) {
+            if (width < 1 || height < 1) {
+                throw new ArgumentException($"Invalid with invalid Width / Height: {width}, {height}");
+            }
             Width = width;
             Height = height;
             data = new ushort[height][];
