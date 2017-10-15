@@ -18,6 +18,15 @@ namespace OpenSatelliteProject.GRB.Product {
             this.IsMetadata = isMetadata;
             this.Meta = meta;
         }
+
+        public string ToProductString() {
+            return $"{Instrument.ToString()}-{FolderName}";
+        }
+
+        override
+        public string ToString() {
+            return $"{Name} - {(IsMetadata ? "Metadata" : "Data")}";
+        }
     }
 }
 

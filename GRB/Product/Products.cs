@@ -7,12 +7,21 @@ namespace OpenSatelliteProject.GRB.Product {
 
         static readonly Dictionary<int, Product> productsByAPID;
 
-        public static Product getProductByAPID(int APID) {
+        public static Product GetProductByAPID(int APID) {
             return (productsByAPID.ContainsKey (APID)) ? productsByAPID [APID] : null;
         }
 
-        public static string getFolderByAPID(int APID) {
-            var p = getProductByAPID (APID);
+        public static string GetProductStringByAPID(int APID) {
+            var p = GetProductByAPID(APID);
+            if (p == null) {
+                return $"UNK-{APID:X3}";
+            }
+
+            return p.ToProductString();
+        }
+
+        public static string GetFolderByAPID(int APID) {
+            var p = GetProductByAPID (APID);
             if (p == null) {
                 return $"Unknown {APID:X3}";
             }
@@ -20,9 +29,18 @@ namespace OpenSatelliteProject.GRB.Product {
             return p.FolderName == null ? p.Instrument.ToString () : Path.Combine (p.Instrument.ToString (), p.FolderName);
         }
 
-        public static string getNameByAPID(int APID) {
-            var p = getProductByAPID (APID);
+        public static string GetNameByAPID(int APID) {
+            var p = GetProductByAPID (APID);
             return p == null ? $"Unknown Product {APID:X3}" : p.Name;
+        }
+
+        public static bool IsMetadata(int APID) {
+            var p = GetProductByAPID(APID);
+            if (p == null) {
+                return false;
+            }
+
+            return p.IsMetadata;
         }
 
         static Products() {

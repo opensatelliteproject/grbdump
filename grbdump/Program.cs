@@ -7,6 +7,7 @@ using System.Diagnostics;
 namespace grbdump {
     class MainClass {
         static Connector cn;
+        static UdpReceiver udpReceiver;
 
         static ChannelManager channel5, channel6;
 
@@ -32,6 +33,7 @@ namespace grbdump {
             fileHandlerManager.Start();
 
             UIConsole.GlobalEnableDebug = true;
+            /*
             cn = new Connector ();
             cn.ChannelDataAvailable += data => {
                 data = data.Take(2042).ToArray();
@@ -45,6 +47,22 @@ namespace grbdump {
                 }
             };
             cn.Start ();
+            */
+            udpReceiver = new UdpReceiver();
+            udpReceiver.ChannelDataAvailable += data => {
+                data = data.Take(2042).ToArray();
+                int vcid = (data[1] & 0x3F);
+                if (vcid == 5) {
+                    channel5.NewPacket(data);
+                } else if (vcid == 6) {
+                    channel6.NewPacket(data);
+                } else if (vcid == 63 ) {
+                    // Fill Frame
+                } else {
+                    UIConsole.Error($"Unknown VCID for GRB: {vcid}");
+                }
+            };
+            udpReceiver.Start();
 
             while (true) {
                 Thread.Sleep (1000);

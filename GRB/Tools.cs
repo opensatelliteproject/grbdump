@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace OpenSatelliteProject.GRB {
     public static class Tools {
@@ -59,6 +60,33 @@ namespace OpenSatelliteProject.GRB {
             random.NextBytes(buff);
             return string.Join("", buff.Select(b => b.ToString("X2")));
 		}
+
+        public static string FindAttrValue(XDocument doc, string name, bool caseInsensitive=true) {
+            var z = doc.Descendants().First().Descendants();
+            foreach (var d in z) {
+                if (d.Name.LocalName == "attribute") {
+                    var attr = d.FirstAttribute;
+                    bool datasetName = false;
+                    while (attr != null) {
+                        if (attr.Name == "name") {
+                            if ( 
+                                (attr.Value != name && !caseInsensitive) || 
+                                (attr.Value.ToLower() != name.ToLower() && caseInsensitive)
+                               ) {
+                                break;
+                            }
+                            datasetName = true;
+                        }
+                        if (attr.Name == "value" && datasetName) {
+                            return attr.Value;
+                        }
+                        attr = attr.NextAttribute;
+                    }
+                }
+            }
+
+            return null;
+        }
 	}
 }
 

@@ -51,6 +51,8 @@
     <Reference Include="XRIT">
       <HintPath>..\packages\OpenSatelliteProject.XRIT.1.3.6489\lib\net45\XRIT.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
