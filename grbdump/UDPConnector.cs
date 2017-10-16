@@ -125,32 +125,28 @@ namespace grbdump {
             long counter = -1;
             if (data.Length == 5384 || data.Length == 7278) {
                 // Ayecka Packet Count is broken
-                /*
                 byte[] countData = data.Take(4).ToArray();
                 data = data.Skip(4).ToArray();
-                if (BitConverter.IsLittleEndian) {
-                    Array.Reverse(countData); // To Little Endian
+
+                if (countData[0] == 0xB8) { // DVB-S3 Layer 3 Adaptation Header
+                    counter = countData[3];
                 }
-                counter = BitConverter.ToUInt32(countData, 0);
-                */
             }
 
             bool QPSK = data.Length == 7274;
 
-            if (lastPacketNumber != -1 && counter != -1) {
+            if (lastPacketNumber != -1 && counter != -1 && lastPacketNumber != 255) {
                 if (lastPacketNumber == counter) {
                     UIConsole.Warn("Packet arrived duplicated! Dropping.");
                     return;
                 }
                 if (lastPacketNumber > counter) {
-                    UIConsole.Warn($"{lastPacketNumber}, {counter}");
-                    UIConsole.Warn("Packet arrived out of order! Dropping.");
+                    UIConsole.Warn($"Packet arrived out of order! Dropping. - Last: {lastPacketNumber}, Current: {counter}");
                     return;
                 }
                 if (lastPacketNumber + 1 != counter) {
-                    UIConsole.Warn($"{lastPacketNumber}, {counter}");
                     long missingPackets = counter - lastPacketNumber + 1;
-                    UIConsole.Warn($"Missing {missingPackets} packets!");
+                    UIConsole.Warn($"Missing {missingPackets} packets! - Last: {lastPacketNumber}, Current: {counter}");
                 }
             }
 
