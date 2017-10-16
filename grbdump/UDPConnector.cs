@@ -141,8 +141,8 @@ namespace grbdump {
                     return;
                 }
                 if (lastPacketNumber > counter) {
-                    UIConsole.Warn($"Packet arrived out of order! Dropping. - Last: {lastPacketNumber}, Current: {counter}");
-                    return;
+                    UIConsole.Warn($"Packet arrived out of order! - Last: {lastPacketNumber}, Current: {counter}");
+                    // return;
                 }
                 if (lastPacketNumber + 1 != counter) {
                     long missingPackets = counter - lastPacketNumber + 1;

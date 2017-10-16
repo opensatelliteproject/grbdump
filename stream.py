@@ -3,8 +3,8 @@
 import socket, time
 
 #file = "/media/ELTN/Baseband Records/GOES/GRB/TBSCapture/Q-capture1.ts"
-file = "/home/lucas/Works/OpenSatelliteProject/split/grbdump/Q-capture.cadu"
-#file = "/media/ELTN/Baseband Records/GOES/GRB/TestData/cspp-geo-grb-test-data-0.4.6/CADU_5"
+#file = "/home/lucas/Works/OpenSatelliteProject/split/grbdump/Q-capture.cadu"
+file = "/media/ELTN/Baseband Records/GOES/GRB/TestData/cspp-geo-grb-test-data-0.4.6/CADU_5"
 #file = "/media/ELTN/Baseband Records/GOES/GRB/TestData/cspp-geo-grb-test-data-0.4.6/CADU_6"
 #file = "/media/lucas/0E003F18003F05ED1/CADU/CADU_6"
 SearchBuffSize = 2048
