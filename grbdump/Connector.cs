@@ -27,7 +27,7 @@ namespace grbdump {
         public Connector () {
             channelDataThread = new Thread(new ThreadStart(ChannelDataLoop)) {
                 IsBackground = true,
-                Priority = ThreadPriority.AboveNormal,
+                Priority = ThreadPriority.Highest,
             };
         }
 

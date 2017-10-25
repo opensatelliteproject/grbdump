@@ -6,7 +6,6 @@ using System.Diagnostics;
 
 namespace grbdump {
     class MainClass {
-        static Connector cn;
         static UdpReceiver udpReceiver;
 
         static ChannelManager channel5, channel6;

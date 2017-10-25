@@ -9,6 +9,7 @@ using OpenSatelliteProject;
 namespace grbdump {
     class UdpReceiver {
 
+        static readonly int BufferSizeInFrames = 512; // 512 * 7278 = 3726336 = 3.72MB
         static readonly byte[] SyncMark = { 0x1A, 0xCF, 0xFC, 0x1D };
 
         public static int ChannelDataServerPort { get; set; }
@@ -31,7 +32,7 @@ namespace grbdump {
         public UdpReceiver() {
             channelDataThread = new Thread(new ThreadStart(ChannelDataLoop)) {
                 IsBackground = true,
-                Priority = ThreadPriority.AboveNormal,
+                Priority = ThreadPriority.Highest,
             };
         }
 
@@ -69,7 +70,8 @@ namespace grbdump {
                 UIConsole.Log($"UDP Channel Data Loop started at port {ChannelDataServerPort}");
                 UdpClient udpClient = new UdpClient(ChannelDataServerPort);
                 IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                udpClient.Client.ReceiveTimeout = 1000;
+                udpClient.Client.ReceiveTimeout = 20;
+                udpClient.Client.ReceiveBufferSize = 7278 * BufferSizeInFrames;
                 while (channelDataThreadRunning) {
                     try {
                         byte[] buffer = udpClient.Receive(ref RemoteIpEndPoint);
@@ -128,11 +130,12 @@ namespace grbdump {
                 byte[] countData = data.Take(4).ToArray();
                 data = data.Skip(4).ToArray();
 
-                if (countData[0] == 0xB8) { // DVB-S3 Layer 3 Adaptation Header
+                if (countData[0] == 0xB8) { // DVB-S2 Layer 3 Adaptation Header
                     counter = countData[3];
+                } else {
+                    UIConsole.Warn("Looks like not a ayecka output");
                 }
             }
-
             bool QPSK = data.Length == 7274;
 
             if (lastPacketNumber != -1 && counter != -1 && lastPacketNumber != 255) {
@@ -181,7 +184,6 @@ namespace grbdump {
                     lastFrame.Clear();
                 }
             }
-
         }
 
         long lastCaduNumber = -1;
