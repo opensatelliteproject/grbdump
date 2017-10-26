@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IMTools", "ImageTools\IMToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GRB", "GRB\GRB.csproj", "{0B6D542D-33A9-43E7-989F-9C56359860FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryTest", "LibraryTest\LibraryTest.csproj", "{B2BFDD20-49DE-42E1-8022-A6C300200A05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -31,6 +33,10 @@ Global
 		{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}.Debug|x86.Build.0 = Debug|x86
 		{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}.Release|x86.ActiveCfg = Release|x86
 		{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}.Release|x86.Build.0 = Release|x86
+		{B2BFDD20-49DE-42E1-8022-A6C300200A05}.Debug|x86.ActiveCfg = Debug|x86
+		{B2BFDD20-49DE-42E1-8022-A6C300200A05}.Debug|x86.Build.0 = Debug|x86
+		{B2BFDD20-49DE-42E1-8022-A6C300200A05}.Release|x86.ActiveCfg = Release|x86
+		{B2BFDD20-49DE-42E1-8022-A6C300200A05}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

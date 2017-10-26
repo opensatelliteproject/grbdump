@@ -1,14 +1,14 @@
-﻿<Properties RefactoringSettings.EnableRefactorings="True" StartupConfiguration="{CFAD7ECE-55B4-43DA-97E2-FF5657F9B095}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="grbdump/GRBData.cs">
+﻿<Properties RefactoringSettings.EnableRefactorings="True" StartupConfiguration="{B2BFDD20-49DE-42E1-8022-A6C300200A05}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="LibraryTest/Program.cs">
     <Files>
-      <File FileName="grbdump/Program.cs" Line="56" Column="36" />
-      <File FileName="grbdump/UDPConnector.cs" Line="156" Column="40" />
+      <File FileName="grbdump/Program.cs" Line="66" Column="13" />
+      <File FileName="grbdump/UDPConnector.cs" Line="73" Column="54" />
       <File FileName="grbdump/Connector.cs" Line="69" Column="53" />
-      <File FileName="grbdump/MSDUManager.cs" Line="1" Column="1" />
       <File FileName="grbdump/FileHandlerManager.cs" Line="1" Column="1" />
       <File FileName="grbdump/Demuxer.cs" Line="1" Column="1" />
       <File FileName="grbdump/ChannelManager.cs" Line="1" Column="1" />
-      <File FileName="grbdump/GRBData.cs" Line="74" Column="24" />
+      <File FileName="LibraryTest/Program.cs" Line="21" Column="1" />
+      <File FileName="ImageTools/Image16.cs" Line="173" Column="21" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
@@ -19,5 +19,6 @@
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.ItemProperties.grbdump PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.ItemProperties.LibraryTest PreferredExecutionTarget="MonoDevelop.Default" />
   <MultiItemStartupConfigurations />
 </Properties>

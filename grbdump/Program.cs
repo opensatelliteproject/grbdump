@@ -7,6 +7,7 @@ using System.Diagnostics;
 namespace grbdump {
     class MainClass {
         static UdpReceiver udpReceiver;
+        static Connector cn;
 
         static ChannelManager channel5, channel6;
 
@@ -25,6 +26,7 @@ namespace grbdump {
 			msduManager = new MSDUManager(fileHandlerManager);
             channel5 = new ChannelManager(msduManager);
             channel6 = new ChannelManager(msduManager);
+            // cn = new Connector();
 
             channel5.Start();
             channel6.Start();
@@ -32,8 +34,8 @@ namespace grbdump {
             fileHandlerManager.Start();
 
             UIConsole.GlobalEnableDebug = true;
-            /*
-            cn = new Connector ();
+
+            /*cn = new Connector ();
             cn.ChannelDataAvailable += data => {
                 data = data.Take(2042).ToArray();
                 int vcid = (data[1] & 0x3F);

@@ -170,15 +170,22 @@ namespace OpenSatelliteProject.IMTools {
                         bw.Write ((byte)head[i]);
                     }
 
+                    /*
+                     * Here if I swap endianess for the whole image then save,
+                     * it saves about 3 seconds for a 21k image. Not worth it 
+                     * since it doubles ram usage.
+                     */
+
+                    byte[] lineData = new byte[Width * 2];
                     for (int y = 0; y < Height; y++) {
                         for (int x = 0; x < Width; x++) {
                             byte[] b = BitConverter.GetBytes (data [y] [x]);
-                            if (BitConverter.IsLittleEndian) {
-                                Array.Reverse (b);
-                            }
-                            bw.Write(b, 0, 2);
+                            lineData[x * 2] = b[1];
+                            lineData[x * 2 + 1] = b[0];
                         }
+
                     }
+                    bw.Write(lineData, 0, lineData.Length);
                 }
             }
         }

@@ -70,7 +70,7 @@ namespace grbdump {
                 UIConsole.Log($"UDP Channel Data Loop started at port {ChannelDataServerPort}");
                 UdpClient udpClient = new UdpClient(ChannelDataServerPort);
                 IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                udpClient.Client.ReceiveTimeout = 20;
+                udpClient.Client.ReceiveTimeout = 200;
                 udpClient.Client.ReceiveBufferSize = 7278 * BufferSizeInFrames;
                 while (channelDataThreadRunning) {
                     try {
