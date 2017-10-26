@@ -1,5 +1,5 @@
 ﻿<Properties RefactoringSettings.EnableRefactorings="True" StartupConfiguration="{B2BFDD20-49DE-42E1-8022-A6C300200A05}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="LibraryTest/Program.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="grbdump/Connector.cs">
     <Files>
       <File FileName="grbdump/Program.cs" Line="66" Column="13" />
       <File FileName="grbdump/UDPConnector.cs" Line="73" Column="54" />
@@ -7,7 +7,7 @@
       <File FileName="grbdump/FileHandlerManager.cs" Line="1" Column="1" />
       <File FileName="grbdump/Demuxer.cs" Line="1" Column="1" />
       <File FileName="grbdump/ChannelManager.cs" Line="1" Column="1" />
-      <File FileName="LibraryTest/Program.cs" Line="21" Column="1" />
+      <File FileName="LibraryTest/Program.cs" Line="13" Column="9" />
       <File FileName="ImageTools/Image16.cs" Line="173" Column="21" />
     </Files>
   </MonoDevelop.Ide.Workbench>

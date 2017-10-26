@@ -17,7 +17,7 @@ namespace grbdump {
         public static void Main (string[] args) {
             try {
                 Process thisProc = Process.GetCurrentProcess();
-                thisProc.PriorityClass = ProcessPriorityClass.High;
+                thisProc.PriorityClass = ProcessPriorityClass.RealTime;
             } catch (Exception e) {
                 UIConsole.Error($"Failed changing process priority: {e}");
             }
