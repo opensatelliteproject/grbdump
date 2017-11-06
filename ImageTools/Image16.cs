@@ -183,9 +183,8 @@ namespace OpenSatelliteProject.IMTools {
                             lineData[x * 2] = b[1];
                             lineData[x * 2 + 1] = b[0];
                         }
-
+                        bw.Write(lineData, 0, lineData.Length);
                     }
-                    bw.Write(lineData, 0, lineData.Length);
                 }
             }
         }

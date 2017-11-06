@@ -4,7 +4,7 @@ using OpenSatelliteProject;
 
 namespace grbdump {
     class ChannelManager {
-        const int MAX_QUEUE_LENGTH = 0xFFFF;
+        const int MAX_QUEUE_LENGTH = 0x2FFFF; // Memory usage will be this * 2048
         readonly ConcurrentQueue<byte[]> packets;
 
         bool running;
@@ -20,10 +20,11 @@ namespace grbdump {
         public void NewPacket(byte[] packet) {
             if (running) {
                 if (packets.Count >= MAX_QUEUE_LENGTH) {
-                    UIConsole.Warn("Channel Manager Queue is full!!!!");
-                } else {
-                    packets.Enqueue(packet);
+                    byte[] drop;
+                    UIConsole.Warn("Channel Manager Queue is full!!!! Samples might be dropped.");
+                    packets.TryDequeue(out drop);
                 }
+                packets.Enqueue(packet);
             }
         }
 
@@ -55,10 +56,13 @@ namespace grbdump {
             UIConsole.Debug("Channel Thread started");
             while (running) {
                 byte[] packet;
-                if (packets.TryDequeue(out packet)) {
+                int c = 0;
+                while (c < 8 && packets.TryDequeue(out packet)) {
                     demuxer.ParseBytes(packet);
+                    c++;
                 }
-                Thread.Yield();
+                Thread.Sleep(1);
+                // Thread.yield(); // That might be better. Not sure
 			}
 			UIConsole.Debug("Channel Thread stopped");
         }

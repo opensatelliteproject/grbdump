@@ -29,10 +29,11 @@ namespace grbdump {
 		public void FinishMSDU(OpenSatelliteProject.GRB.MSDU msdu) {
 			if (running) {
 				if (packets.Count >= MAX_QUEUE_LENGTH) {
-					UIConsole.Warn("MSDU Manager Queue is full!!!!");
-				} else {
-					packets.Enqueue(msdu);
+                    OpenSatelliteProject.GRB.MSDU lmsdu;
+					UIConsole.Warn("MSDU Manager Queue is full!!!! Some MSDU might be discarded!");
+                    packets.TryDequeue(out lmsdu);
 				}
+				packets.Enqueue(msdu);
 			}
 		}
 
@@ -85,7 +86,8 @@ namespace grbdump {
                     }
                 });
 				
-                Thread.Yield();
+                // Thread.Yield(); // This might be better
+                Thread.Sleep(2);
 			}
 			UIConsole.Debug("Channel Thread stopped");
 		}

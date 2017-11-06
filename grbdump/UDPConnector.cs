@@ -71,7 +71,7 @@ namespace grbdump {
                 UdpClient udpClient = new UdpClient(ChannelDataServerPort);
                 IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
                 udpClient.Client.ReceiveTimeout = 200;
-                udpClient.Client.ReceiveBufferSize = 7278 * BufferSizeInFrames;
+                // udpClient.Client.ReceiveBufferSize = 7278 * BufferSizeInFrames; // Ray found out that this is making rx bad.
                 while (channelDataThreadRunning) {
                     try {
                         byte[] buffer = udpClient.Receive(ref RemoteIpEndPoint);

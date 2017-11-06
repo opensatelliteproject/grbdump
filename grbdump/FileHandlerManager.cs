@@ -20,10 +20,11 @@ namespace grbdump {
 		public void NewFile(Tuple<string, object> file) {
 			if (running) {
 				if (packets.Count >= MAX_QUEUE_LENGTH) {
-					UIConsole.Warn("File Handler Queue is full!!!!");
-				} else {
-					packets.Enqueue(file);
+                    Tuple<string, object> f;
+					UIConsole.Warn("File Handler Queue is full!!!! Files might be discarded!");
+                    packets.TryDequeue(out f);
 				}
+				packets.Enqueue(file);
 			}
 		}
 
@@ -66,7 +67,8 @@ namespace grbdump {
                         UIConsole.Error($"Invalid Type: {obj.GetType().Name}");
                     }
 				}
-				Thread.Yield();
+				// Thread.Yield(); // This might be better
+                Thread.Sleep(5);
 			}
 			UIConsole.Debug("File Handler stopped");
 		}
